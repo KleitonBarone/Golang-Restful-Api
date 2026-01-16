@@ -2,7 +2,16 @@
 
 ## API docs
 
-API docs is in Insomnia.json file, just import it to insomnia.
+Once the server is running, visit http://localhost:8080/docs for interactive API documentation powered by Scalar.
+
+### Updating OpenAPI spec
+
+After modifying swagger annotations in `main.go`, regenerate the spec:
+
+```
+go install github.com/swaggo/swag/cmd/swag@latest
+swag init
+```
 
 ## Getting Started
 

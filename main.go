@@ -1,9 +1,25 @@
 package main
 
 import (
+	_ "embed"
 	"net/http"
+
+	_ "project/web-service/docs"
+
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
+
+//go:embed docs/scalar.html
+var scalarHTML []byte
+
+// @title Albums API
+// @version 1.0
+// @description A simple RESTful API for managing albums
+
+// @host localhost:8080
+// @BasePath /
 
 // album represents data about a record album.
 type album struct {
@@ -26,15 +42,37 @@ func main() {
 	router.GET("/albums/:id", getAlbumByID)
 	router.POST("/albums", postAlbums)
 
+	// Swagger JSON endpoint (used by Scalar)
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	// Scalar docs UI
+	router.GET("/docs", func(c *gin.Context) {
+		c.Data(http.StatusOK, "text/html; charset=utf-8", scalarHTML)
+	})
+
 	router.Run("localhost:8080")
 }
 
 // getAlbums responds with the list of all albums as JSON.
+// @Summary List all albums
+// @Description Get all albums in the collection
+// @Tags albums
+// @Produce json
+// @Success 200 {array} album
+// @Router /albums [get]
 func getAlbums(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, albums)
 }
 
 // postAlbums adds an album from JSON received in the request body.
+// @Summary Create an album
+// @Description Add a new album to the collection
+// @Tags albums
+// @Accept json
+// @Produce json
+// @Param album body album true "Album to create"
+// @Success 201 {object} album
+// @Router /albums [post]
 func postAlbums(c *gin.Context) {
 	var newAlbum album
 
@@ -51,6 +89,14 @@ func postAlbums(c *gin.Context) {
 
 // getAlbumByID locates the album whose ID value matches the id
 // parameter sent by the client, then returns that album as a response.
+// @Summary Get an album by ID
+// @Description Get a single album by its ID
+// @Tags albums
+// @Produce json
+// @Param id path string true "Album ID"
+// @Success 200 {object} album
+// @Failure 404 {object} map[string]string
+// @Router /albums/{id} [get]
 func getAlbumByID(c *gin.Context) {
 	id := c.Param("id")
 
@@ -58,8 +104,8 @@ func getAlbumByID(c *gin.Context) {
 	// an album whose ID value matches the parameter.
 	for _, a := range albums {
 		if a.ID == id {
-		c.IndentedJSON(http.StatusOK, a)
-		return
+			c.IndentedJSON(http.StatusOK, a)
+			return
 		}
 	}
 	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "album not found"})
