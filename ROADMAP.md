@@ -15,3 +15,4 @@ each substantive change; avoid commits that only move checkboxes.
 ## Completed
 
 - Document repository-specific agent instructions and verification requirements.
+- Establish route-level tests for the existing list, lookup, and create behavior.

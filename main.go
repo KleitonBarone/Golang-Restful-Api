@@ -37,6 +37,11 @@ var albums = []album{
 }
 
 func main() {
+	router := setupRouter()
+	router.Run("localhost:8080")
+}
+
+func setupRouter() *gin.Engine {
 	router := gin.Default()
 	router.GET("/albums", getAlbums)
 	router.GET("/albums/:id", getAlbumByID)
@@ -50,7 +55,7 @@ func main() {
 		c.Data(http.StatusOK, "text/html; charset=utf-8", scalarHTML)
 	})
 
-	router.Run("localhost:8080")
+	return router
 }
 
 // getAlbums responds with the list of all albums as JSON.
