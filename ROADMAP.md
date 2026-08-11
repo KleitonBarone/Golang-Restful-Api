@@ -1,8 +1,5 @@
 # Roadmap
 
-This roadmap is based on the current repository state. Reassess priorities after
-each substantive change; avoid commits that only move checkboxes.
-
 ## Next
 
 - Add explicit request validation and documented client-error responses.
@@ -14,5 +11,4 @@ each substantive change; avoid commits that only move checkboxes.
 
 ## Completed
 
-- Document repository-specific agent instructions and verification requirements.
-- Establish route-level tests for the existing list, lookup, and create behavior.
+- Route-level test coverage for the existing list, lookup, and create behavior.
