@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"net/http"
+	"strings"
 
 	_ "project/web-service/docs"
 
@@ -27,6 +28,10 @@ type album struct {
 	Title  string  `json:"title"`
 	Artist string  `json:"artist"`
 	Price  float64 `json:"price"`
+}
+
+type errorResponse struct {
+	Message string `json:"message"`
 }
 
 // albums slice to seed record album data.
@@ -77,19 +82,38 @@ func getAlbums(c *gin.Context) {
 // @Produce json
 // @Param album body album true "Album to create"
 // @Success 201 {object} album
+// @Failure 400 {object} errorResponse
 // @Router /albums [post]
 func postAlbums(c *gin.Context) {
 	var newAlbum album
 
-	// Call BindJSON to bind the received JSON to
-	// newAlbum.
-	if err := c.BindJSON(&newAlbum); err != nil {
+	if err := c.ShouldBindJSON(&newAlbum); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: "invalid request body"})
+		return
+	}
+	if validationError := validateAlbum(newAlbum); validationError != "" {
+		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: validationError})
 		return
 	}
 
 	// Add the new album to the slice.
 	albums = append(albums, newAlbum)
 	c.IndentedJSON(http.StatusCreated, newAlbum)
+}
+
+func validateAlbum(candidate album) string {
+	switch {
+	case strings.TrimSpace(candidate.ID) == "":
+		return "id is required"
+	case strings.TrimSpace(candidate.Title) == "":
+		return "title is required"
+	case strings.TrimSpace(candidate.Artist) == "":
+		return "artist is required"
+	case candidate.Price <= 0:
+		return "price must be greater than zero"
+	default:
+		return ""
+	}
 }
 
 // getAlbumByID locates the album whose ID value matches the id

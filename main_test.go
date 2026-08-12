@@ -118,4 +118,54 @@ func TestPostAlbumsRejectsMalformedJSON(t *testing.T) {
 	if len(albums) != before {
 		t.Fatalf("malformed request changed album count from %d to %d", before, len(albums))
 	}
+
+	var got errorResponse
+	if err := json.Unmarshal(response.Body.Bytes(), &got); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if got.Message != "invalid request body" {
+		t.Fatalf("expected invalid-body message, got %q", got.Message)
+	}
+}
+
+func TestPostAlbumsValidatesRequest(t *testing.T) {
+	tests := []struct {
+		name        string
+		body        string
+		wantMessage string
+	}{
+		{name: "missing id", body: `{"title":"Kind of Blue","artist":"Miles Davis","price":29.99}`, wantMessage: "id is required"},
+		{name: "blank title", body: `{"id":"4","title":" ","artist":"Miles Davis","price":29.99}`, wantMessage: "title is required"},
+		{name: "missing artist", body: `{"id":"4","title":"Kind of Blue","price":29.99}`, wantMessage: "artist is required"},
+		{name: "zero price", body: `{"id":"4","title":"Kind of Blue","artist":"Miles Davis","price":0}`, wantMessage: "price must be greater than zero"},
+		{name: "negative price", body: `{"id":"4","title":"Kind of Blue","artist":"Miles Davis","price":-1}`, wantMessage: "price must be greater than zero"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			preserveAlbums(t)
+			before := len(albums)
+			router := testRouter(t)
+			response := httptest.NewRecorder()
+			request := httptest.NewRequest(http.MethodPost, "/albums", bytes.NewBufferString(tt.body))
+			request.Header.Set("Content-Type", "application/json")
+
+			router.ServeHTTP(response, request)
+
+			if response.Code != http.StatusBadRequest {
+				t.Fatalf("expected status %d, got %d", http.StatusBadRequest, response.Code)
+			}
+			if len(albums) != before {
+				t.Fatalf("invalid request changed album count from %d to %d", before, len(albums))
+			}
+
+			var got errorResponse
+			if err := json.Unmarshal(response.Body.Bytes(), &got); err != nil {
+				t.Fatalf("decode response: %v", err)
+			}
+			if got.Message != tt.wantMessage {
+				t.Fatalf("expected message %q, got %q", tt.wantMessage, got.Message)
+			}
+		})
+	}
 }

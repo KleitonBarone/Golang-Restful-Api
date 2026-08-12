@@ -11,6 +11,11 @@ definitions:
       title:
         type: string
     type: object
+  main.errorResponse:
+    properties:
+      message:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -51,6 +56,10 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/main.album'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.errorResponse'
       summary: Create an album
       tags:
       - albums

@@ -66,6 +66,12 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/main.album"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/main.errorResponse"
+                        }
                     }
                 }
             }
@@ -123,6 +129,14 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "main.errorResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
                     "type": "string"
                 }
             }
