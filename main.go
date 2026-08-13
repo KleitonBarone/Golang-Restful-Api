@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"net/http"
 	"strings"
+	"sync"
 
 	_ "project/web-service/docs"
 
@@ -40,6 +41,7 @@ var albums = []album{
 	{ID: "2", Title: "Jeru", Artist: "Gerry Mulligan", Price: 17.99},
 	{ID: "3", Title: "Sarah Vaughan and Clifford Brown", Artist: "Sarah Vaughan", Price: 39.99},
 }
+var albumsMu sync.RWMutex
 
 func main() {
 	router := setupRouter()
@@ -71,7 +73,11 @@ func setupRouter() *gin.Engine {
 // @Success 200 {array} album
 // @Router /albums [get]
 func getAlbums(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, albums)
+	albumsMu.RLock()
+	currentAlbums := append([]album(nil), albums...)
+	albumsMu.RUnlock()
+
+	c.IndentedJSON(http.StatusOK, currentAlbums)
 }
 
 // postAlbums adds an album from JSON received in the request body.
@@ -96,8 +102,10 @@ func postAlbums(c *gin.Context) {
 		return
 	}
 
-	// Add the new album to the slice.
+	albumsMu.Lock()
 	albums = append(albums, newAlbum)
+	albumsMu.Unlock()
+
 	c.IndentedJSON(http.StatusCreated, newAlbum)
 }
 
@@ -129,13 +137,15 @@ func validateAlbum(candidate album) string {
 func getAlbumByID(c *gin.Context) {
 	id := c.Param("id")
 
-	// Loop over the list of albums, looking for
-	// an album whose ID value matches the parameter.
+	albumsMu.RLock()
 	for _, a := range albums {
 		if a.ID == id {
+			albumsMu.RUnlock()
 			c.IndentedJSON(http.StatusOK, a)
 			return
 		}
 	}
+	albumsMu.RUnlock()
+
 	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "album not found"})
 }
