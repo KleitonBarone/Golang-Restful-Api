@@ -15,25 +15,7 @@ import (
 func testRouter(t *testing.T) *gin.Engine {
 	t.Helper()
 	gin.SetMode(gin.TestMode)
-	return setupRouter()
-}
-
-func preserveAlbums(t *testing.T) {
-	t.Helper()
-	albumsMu.RLock()
-	original := append([]album(nil), albums...)
-	albumsMu.RUnlock()
-	t.Cleanup(func() {
-		albumsMu.Lock()
-		albums = original
-		albumsMu.Unlock()
-	})
-}
-
-func currentAlbums() []album {
-	albumsMu.RLock()
-	defer albumsMu.RUnlock()
-	return append([]album(nil), albums...)
+	return setupRouterWithStore(newAlbumStore(seedAlbums()))
 }
 
 func TestGetAlbums(t *testing.T) {
@@ -51,7 +33,7 @@ func TestGetAlbums(t *testing.T) {
 	if err := json.Unmarshal(response.Body.Bytes(), &got); err != nil {
 		t.Fatalf("decode response: %v", err)
 	}
-	want := currentAlbums()
+	want := seedAlbums()
 	if len(got) != len(want) {
 		t.Fatalf("expected %d albums, got %d", len(want), len(got))
 	}
@@ -72,7 +54,7 @@ func TestGetAlbumByID(t *testing.T) {
 	if err := json.Unmarshal(response.Body.Bytes(), &got); err != nil {
 		t.Fatalf("decode response: %v", err)
 	}
-	want := currentAlbums()[1]
+	want := seedAlbums()[1]
 	if got != want {
 		t.Fatalf("expected album %#v, got %#v", want, got)
 	}
@@ -99,8 +81,8 @@ func TestGetAlbumByIDNotFound(t *testing.T) {
 }
 
 func TestPostAlbums(t *testing.T) {
-	preserveAlbums(t)
-	router := testRouter(t)
+	store := newAlbumStore(seedAlbums())
+	router := setupRouterWithStore(store)
 	response := httptest.NewRecorder()
 	body := []byte(`{"id":"4","title":"Kind of Blue","artist":"Miles Davis","price":29.99}`)
 	request := httptest.NewRequest(http.MethodPost, "/albums", bytes.NewReader(body))
@@ -111,15 +93,15 @@ func TestPostAlbums(t *testing.T) {
 	if response.Code != http.StatusCreated {
 		t.Fatalf("expected status %d, got %d", http.StatusCreated, response.Code)
 	}
-	if got := len(currentAlbums()); got != 4 {
+	if got := len(store.list()); got != 4 {
 		t.Fatalf("expected 4 albums after creation, got %d", got)
 	}
 }
 
 func TestPostAlbumsRejectsMalformedJSON(t *testing.T) {
-	preserveAlbums(t)
-	before := len(currentAlbums())
-	router := testRouter(t)
+	store := newAlbumStore(seedAlbums())
+	before := len(store.list())
+	router := setupRouterWithStore(store)
 	response := httptest.NewRecorder()
 	request := httptest.NewRequest(http.MethodPost, "/albums", bytes.NewBufferString(`{"id":`))
 	request.Header.Set("Content-Type", "application/json")
@@ -129,7 +111,7 @@ func TestPostAlbumsRejectsMalformedJSON(t *testing.T) {
 	if response.Code != http.StatusBadRequest {
 		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, response.Code)
 	}
-	if got := len(currentAlbums()); got != before {
+	if got := len(store.list()); got != before {
 		t.Fatalf("malformed request changed album count from %d to %d", before, got)
 	}
 
@@ -157,9 +139,9 @@ func TestPostAlbumsValidatesRequest(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			preserveAlbums(t)
-			before := len(currentAlbums())
-			router := testRouter(t)
+			store := newAlbumStore(seedAlbums())
+			before := len(store.list())
+			router := setupRouterWithStore(store)
 			response := httptest.NewRecorder()
 			request := httptest.NewRequest(http.MethodPost, "/albums", bytes.NewBufferString(tt.body))
 			request.Header.Set("Content-Type", "application/json")
@@ -169,7 +151,7 @@ func TestPostAlbumsValidatesRequest(t *testing.T) {
 			if response.Code != http.StatusBadRequest {
 				t.Fatalf("expected status %d, got %d", http.StatusBadRequest, response.Code)
 			}
-			if got := len(currentAlbums()); got != before {
+			if got := len(store.list()); got != before {
 				t.Fatalf("invalid request changed album count from %d to %d", before, got)
 			}
 
@@ -185,9 +167,9 @@ func TestPostAlbumsValidatesRequest(t *testing.T) {
 }
 
 func TestAlbumRoutesHandleConcurrentRequests(t *testing.T) {
-	preserveAlbums(t)
-	router := testRouter(t)
-	before := len(currentAlbums())
+	store := newAlbumStore(seedAlbums())
+	router := setupRouterWithStore(store)
+	before := len(store.list())
 
 	const requestCount = 50
 	errs := make(chan error, requestCount*2)
@@ -231,7 +213,42 @@ func TestAlbumRoutesHandleConcurrentRequests(t *testing.T) {
 		t.Error(err)
 	}
 
-	if got, want := len(currentAlbums()), before+requestCount; got != want {
+	if got, want := len(store.list()), before+requestCount; got != want {
 		t.Fatalf("expected %d albums after concurrent creation, got %d", want, got)
+	}
+}
+
+func TestRoutersUseIndependentStores(t *testing.T) {
+	firstStore := newAlbumStore(seedAlbums())
+	firstRouter := setupRouterWithStore(firstStore)
+	secondStore := newAlbumStore(seedAlbums())
+	secondRouter := setupRouterWithStore(secondStore)
+
+	response := httptest.NewRecorder()
+	request := httptest.NewRequest(
+		http.MethodPost,
+		"/albums",
+		bytes.NewBufferString(`{"id":"4","title":"Kind of Blue","artist":"Miles Davis","price":29.99}`),
+	)
+	request.Header.Set("Content-Type", "application/json")
+	firstRouter.ServeHTTP(response, request)
+
+	if response.Code != http.StatusCreated {
+		t.Fatalf("expected status %d, got %d", http.StatusCreated, response.Code)
+	}
+	if got := len(firstStore.list()); got != 4 {
+		t.Fatalf("expected first store to contain 4 albums, got %d", got)
+	}
+
+	response = httptest.NewRecorder()
+	request = httptest.NewRequest(http.MethodGet, "/albums", nil)
+	secondRouter.ServeHTTP(response, request)
+
+	var got []album
+	if err := json.Unmarshal(response.Body.Bytes(), &got); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if want := len(seedAlbums()); len(got) != want {
+		t.Fatalf("expected second store to remain at %d albums, got %d", want, len(got))
 	}
 }

@@ -8,12 +8,14 @@
 
 ## Repository structure
 
-- `main.go` contains the Gin router, HTTP handlers, album model, and in-memory
-  seed data.
+- `main.go` starts the service, while `router.go` composes the Gin router and
+  documentation endpoints.
+- `handlers.go` contains HTTP handlers, `storage.go` owns synchronized in-memory
+  album state, and `album.go` defines the API model and validation.
 - `main_test.go` contains route-level tests using `httptest`.
 - `docs/` contains generated Swagger output and the embedded Scalar UI.
-- The API currently stores albums in package-level memory; tests that mutate the
-  slice must restore it before finishing.
+- Tests should construct an `albumStore` explicitly when they need to inspect or
+  control handler state.
 
 ## Verification
 

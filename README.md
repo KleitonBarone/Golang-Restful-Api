@@ -6,11 +6,11 @@ Once the server is running, visit http://localhost:8080/docs for interactive API
 
 ### Updating OpenAPI spec
 
-After modifying swagger annotations in `main.go`, regenerate the spec:
+After modifying Swagger annotations in the Go source files, regenerate the spec:
 
 ```
 go install github.com/swaggo/swag/cmd/swag@latest
-swag init
+swag init -g router.go
 ```
 
 ## Getting Started
