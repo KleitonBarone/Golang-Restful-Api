@@ -64,6 +64,26 @@ paths:
       tags:
       - albums
   /albums/{id}:
+    delete:
+      description: Remove an album from the collection by its ID
+      parameters:
+      - description: Album ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/main.errorResponse'
+      summary: Delete an album
+      tags:
+      - albums
     get:
       description: Get a single album by its ID
       parameters:
@@ -86,6 +106,40 @@ paths:
               type: string
             type: object
       summary: Get an album by ID
+      tags:
+      - albums
+    put:
+      consumes:
+      - application/json
+      description: Replace an existing album while retaining its ID
+      parameters:
+      - description: Album ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Replacement album
+        in: body
+        name: album
+        required: true
+        schema:
+          $ref: '#/definitions/main.album'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.album'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/main.errorResponse'
+      summary: Update an album
       tags:
       - albums
 swagger: "2.0"

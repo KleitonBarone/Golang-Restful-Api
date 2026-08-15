@@ -166,6 +166,107 @@ func TestPostAlbumsValidatesRequest(t *testing.T) {
 	}
 }
 
+func TestPutAlbumByID(t *testing.T) {
+	store := newAlbumStore(seedAlbums())
+	router := setupRouterWithStore(store)
+	response := httptest.NewRecorder()
+	request := httptest.NewRequest(
+		http.MethodPut,
+		"/albums/2",
+		bytes.NewBufferString(`{"id":"2","title":"Night Lights","artist":"Gerry Mulligan","price":24.99}`),
+	)
+	request.Header.Set("Content-Type", "application/json")
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, response.Code)
+	}
+	want := album{ID: "2", Title: "Night Lights", Artist: "Gerry Mulligan", Price: 24.99}
+	got, ok := store.get("2")
+	if !ok || got != want {
+		t.Fatalf("expected stored album %#v, got %#v (found: %t)", want, got, ok)
+	}
+}
+
+func TestPutAlbumByIDRejectsInvalidRequests(t *testing.T) {
+	tests := []struct {
+		name        string
+		path        string
+		body        string
+		wantStatus  int
+		wantMessage string
+	}{
+		{name: "malformed body", path: "/albums/2", body: `{"id":`, wantStatus: http.StatusBadRequest, wantMessage: "invalid request body"},
+		{name: "invalid album", path: "/albums/2", body: `{"id":"2","title":"","artist":"Gerry Mulligan","price":24.99}`, wantStatus: http.StatusBadRequest, wantMessage: "title is required"},
+		{name: "mismatched id", path: "/albums/2", body: `{"id":"3","title":"Night Lights","artist":"Gerry Mulligan","price":24.99}`, wantStatus: http.StatusBadRequest, wantMessage: "album id must match path id"},
+		{name: "missing album", path: "/albums/missing", body: `{"id":"missing","title":"Night Lights","artist":"Gerry Mulligan","price":24.99}`, wantStatus: http.StatusNotFound, wantMessage: "album not found"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			store := newAlbumStore(seedAlbums())
+			before := store.list()
+			router := setupRouterWithStore(store)
+			response := httptest.NewRecorder()
+			request := httptest.NewRequest(http.MethodPut, tt.path, bytes.NewBufferString(tt.body))
+			request.Header.Set("Content-Type", "application/json")
+
+			router.ServeHTTP(response, request)
+
+			if response.Code != tt.wantStatus {
+				t.Fatalf("expected status %d, got %d", tt.wantStatus, response.Code)
+			}
+			var got errorResponse
+			if err := json.Unmarshal(response.Body.Bytes(), &got); err != nil {
+				t.Fatalf("decode response: %v", err)
+			}
+			if got.Message != tt.wantMessage {
+				t.Fatalf("expected message %q, got %q", tt.wantMessage, got.Message)
+			}
+			if after := store.list(); fmt.Sprint(after) != fmt.Sprint(before) {
+				t.Fatalf("failed update changed albums from %#v to %#v", before, after)
+			}
+		})
+	}
+}
+
+func TestDeleteAlbumByID(t *testing.T) {
+	store := newAlbumStore(seedAlbums())
+	router := setupRouterWithStore(store)
+	response := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodDelete, "/albums/2", nil)
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusNoContent {
+		t.Fatalf("expected status %d, got %d", http.StatusNoContent, response.Code)
+	}
+	if response.Body.Len() != 0 {
+		t.Fatalf("expected an empty response body, got %q", response.Body.String())
+	}
+	if _, ok := store.get("2"); ok {
+		t.Fatal("expected album 2 to be deleted")
+	}
+}
+
+func TestDeleteAlbumByIDNotFound(t *testing.T) {
+	store := newAlbumStore(seedAlbums())
+	before := len(store.list())
+	router := setupRouterWithStore(store)
+	response := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodDelete, "/albums/missing", nil)
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusNotFound {
+		t.Fatalf("expected status %d, got %d", http.StatusNotFound, response.Code)
+	}
+	if got := len(store.list()); got != before {
+		t.Fatalf("missing delete changed album count from %d to %d", before, got)
+	}
+}
+
 func TestAlbumRoutesHandleConcurrentRequests(t *testing.T) {
 	store := newAlbumStore(seedAlbums())
 	router := setupRouterWithStore(store)

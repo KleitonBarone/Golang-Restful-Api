@@ -66,3 +66,58 @@ func (h albumHandler) getAlbumByID(c *gin.Context) {
 
 	c.IndentedJSON(http.StatusOK, currentAlbum)
 }
+
+// putAlbumByID replaces the album whose ID matches the path parameter.
+// @Summary Update an album
+// @Description Replace an existing album while retaining its ID
+// @Tags albums
+// @Accept json
+// @Produce json
+// @Param id path string true "Album ID"
+// @Param album body album true "Replacement album"
+// @Success 200 {object} album
+// @Failure 400 {object} errorResponse
+// @Failure 404 {object} errorResponse
+// @Router /albums/{id} [put]
+func (h albumHandler) putAlbumByID(c *gin.Context) {
+	var updatedAlbum album
+
+	if err := c.ShouldBindJSON(&updatedAlbum); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: "invalid request body"})
+		return
+	}
+	if validationError := validateAlbum(updatedAlbum); validationError != "" {
+		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: validationError})
+		return
+	}
+	if updatedAlbum.ID != c.Param("id") {
+		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: "album id must match path id"})
+		return
+	}
+
+	updatedAlbum, ok := h.store.update(c.Param("id"), updatedAlbum)
+	if !ok {
+		c.IndentedJSON(http.StatusNotFound, errorResponse{Message: "album not found"})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, updatedAlbum)
+}
+
+// deleteAlbumByID removes the album whose ID matches the path parameter.
+// @Summary Delete an album
+// @Description Remove an album from the collection by its ID
+// @Tags albums
+// @Produce json
+// @Param id path string true "Album ID"
+// @Success 204
+// @Failure 404 {object} errorResponse
+// @Router /albums/{id} [delete]
+func (h albumHandler) deleteAlbumByID(c *gin.Context) {
+	if !h.store.delete(c.Param("id")) {
+		c.IndentedJSON(http.StatusNotFound, errorResponse{Message: "album not found"})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}

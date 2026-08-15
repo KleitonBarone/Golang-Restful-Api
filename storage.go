@@ -34,6 +34,30 @@ func (s *albumStore) create(newAlbum album) {
 	s.albums = append(s.albums, newAlbum)
 }
 
+func (s *albumStore) update(id string, updatedAlbum album) (album, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for index, candidate := range s.albums {
+		if candidate.ID == id {
+			s.albums[index] = updatedAlbum
+			return updatedAlbum, true
+		}
+	}
+	return album{}, false
+}
+
+func (s *albumStore) delete(id string) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for index, candidate := range s.albums {
+		if candidate.ID == id {
+			s.albums = append(s.albums[:index], s.albums[index+1:]...)
+			return true
+		}
+	}
+	return false
+}
+
 func seedAlbums() []album {
 	return []album{
 		{ID: "1", Title: "Blue Train", Artist: "John Coltrane", Price: 56.99},

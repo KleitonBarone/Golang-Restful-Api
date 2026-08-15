@@ -32,6 +32,8 @@ func setupRouterWithStore(store *albumStore) *gin.Engine {
 	router.GET("/albums", handler.getAlbums)
 	router.GET("/albums/:id", handler.getAlbumByID)
 	router.POST("/albums", handler.postAlbums)
+	router.PUT("/albums/:id", handler.putAlbumByID)
+	router.DELETE("/albums/:id", handler.deleteAlbumByID)
 
 	// Swagger JSON endpoint (used by Scalar)
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
