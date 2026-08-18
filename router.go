@@ -25,7 +25,7 @@ func setupRouter() *gin.Engine {
 	return setupRouterWithStore(newAlbumStore(seedAlbums()))
 }
 
-func setupRouterWithStore(store *albumStore) *gin.Engine {
+func setupRouterWithStore(store albumStore) *gin.Engine {
 	router := gin.Default()
 	handler := albumHandler{store: store}
 

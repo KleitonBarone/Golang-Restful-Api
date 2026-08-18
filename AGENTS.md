@@ -10,12 +10,14 @@
 
 - `main.go` starts the service, while `router.go` composes the Gin router and
   documentation endpoints.
-- `handlers.go` contains HTTP handlers, `storage.go` owns synchronized in-memory
-  album state, and `album.go` defines the API model and validation.
+- `handlers.go` contains HTTP handlers, `storage.go` defines the `albumStore`
+  abstraction and its synchronized in-memory implementation, and `album.go`
+  defines the API model and validation.
 - `main_test.go` contains route-level tests using `httptest`.
 - `docs/` contains generated Swagger output and the embedded Scalar UI.
-- Tests should construct an `albumStore` explicitly when they need to inspect or
-  control handler state.
+- Tests should construct the in-memory store explicitly when they need to inspect
+  handler state, or provide a small `albumStore` test implementation when they
+  need to verify behavior at the storage boundary.
 
 ## Verification
 

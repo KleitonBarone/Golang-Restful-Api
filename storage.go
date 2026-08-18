@@ -2,22 +2,32 @@ package main
 
 import "sync"
 
-type albumStore struct {
+type albumStore interface {
+	list() []album
+	get(id string) (album, bool)
+	create(album)
+	update(id string, album album) (album, bool)
+	delete(id string) bool
+}
+
+type inMemoryAlbumStore struct {
 	mu     sync.RWMutex
 	albums []album
 }
 
-func newAlbumStore(albums []album) *albumStore {
-	return &albumStore{albums: append([]album(nil), albums...)}
+var _ albumStore = (*inMemoryAlbumStore)(nil)
+
+func newAlbumStore(albums []album) *inMemoryAlbumStore {
+	return &inMemoryAlbumStore{albums: append([]album(nil), albums...)}
 }
 
-func (s *albumStore) list() []album {
+func (s *inMemoryAlbumStore) list() []album {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return append([]album(nil), s.albums...)
 }
 
-func (s *albumStore) get(id string) (album, bool) {
+func (s *inMemoryAlbumStore) get(id string) (album, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	for _, candidate := range s.albums {
@@ -28,13 +38,13 @@ func (s *albumStore) get(id string) (album, bool) {
 	return album{}, false
 }
 
-func (s *albumStore) create(newAlbum album) {
+func (s *inMemoryAlbumStore) create(newAlbum album) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.albums = append(s.albums, newAlbum)
 }
 
-func (s *albumStore) update(id string, updatedAlbum album) (album, bool) {
+func (s *inMemoryAlbumStore) update(id string, updatedAlbum album) (album, bool) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for index, candidate := range s.albums {
@@ -46,7 +56,7 @@ func (s *albumStore) update(id string, updatedAlbum album) (album, bool) {
 	return album{}, false
 }
 
-func (s *albumStore) delete(id string) bool {
+func (s *inMemoryAlbumStore) delete(id string) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for index, candidate := range s.albums {

@@ -7,7 +7,7 @@ import (
 )
 
 type albumHandler struct {
-	store *albumStore
+	store albumStore
 }
 
 // getAlbums responds with the list of all albums as JSON.

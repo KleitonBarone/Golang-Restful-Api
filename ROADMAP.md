@@ -2,7 +2,7 @@
 
 ## Next
 
-- Evaluate a storage abstraction before introducing persistence.
+- No capabilities are currently scheduled.
 
 ## Completed
 
@@ -12,3 +12,4 @@
 - Routing, HTTP handlers, and synchronized in-memory storage are separated for independent testing and composition.
 - Compatible update and delete operations include route-level tests and API documentation.
 - Continuous integration runs tests, static analysis, and builds for pushes and pull requests.
+- HTTP handlers depend on a storage abstraction with a synchronized in-memory implementation, allowing persistence to be added without changing route behavior.

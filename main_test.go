@@ -18,6 +18,67 @@ func testRouter(t *testing.T) *gin.Engine {
 	return setupRouterWithStore(newAlbumStore(seedAlbums()))
 }
 
+type stubAlbumStore struct {
+	albums []album
+}
+
+func (s *stubAlbumStore) list() []album {
+	return append([]album(nil), s.albums...)
+}
+
+func (s *stubAlbumStore) get(id string) (album, bool) {
+	for _, candidate := range s.albums {
+		if candidate.ID == id {
+			return candidate, true
+		}
+	}
+	return album{}, false
+}
+
+func (s *stubAlbumStore) create(newAlbum album) {
+	s.albums = append(s.albums, newAlbum)
+}
+
+func (s *stubAlbumStore) update(id string, updatedAlbum album) (album, bool) {
+	for index, candidate := range s.albums {
+		if candidate.ID == id {
+			s.albums[index] = updatedAlbum
+			return updatedAlbum, true
+		}
+	}
+	return album{}, false
+}
+
+func (s *stubAlbumStore) delete(id string) bool {
+	for index, candidate := range s.albums {
+		if candidate.ID == id {
+			s.albums = append(s.albums[:index], s.albums[index+1:]...)
+			return true
+		}
+	}
+	return false
+}
+
+func TestRouterAcceptsAlbumStoreImplementation(t *testing.T) {
+	want := album{ID: "custom", Title: "Custom Store", Artist: "Test Artist", Price: 1}
+	router := setupRouterWithStore(&stubAlbumStore{albums: []album{want}})
+	response := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/albums/custom", nil)
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, response.Code)
+	}
+	var got album
+	if err := json.Unmarshal(response.Body.Bytes(), &got); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if got != want {
+		t.Fatalf("expected album %#v, got %#v", want, got)
+	}
+}
+
 func TestGetAlbums(t *testing.T) {
 	router := testRouter(t)
 	response := httptest.NewRecorder()
