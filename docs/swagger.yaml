@@ -60,6 +60,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/main.errorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/main.errorResponse'
       summary: Create an album
       tags:
       - albums

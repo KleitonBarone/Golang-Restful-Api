@@ -30,6 +30,7 @@ func (h albumHandler) getAlbums(c *gin.Context) {
 // @Param album body album true "Album to create"
 // @Success 201 {object} album
 // @Failure 400 {object} errorResponse
+// @Failure 409 {object} errorResponse
 // @Router /albums [post]
 func (h albumHandler) postAlbums(c *gin.Context) {
 	var newAlbum album
@@ -43,7 +44,10 @@ func (h albumHandler) postAlbums(c *gin.Context) {
 		return
 	}
 
-	h.store.create(newAlbum)
+	if !h.store.create(newAlbum) {
+		c.IndentedJSON(http.StatusConflict, errorResponse{Message: "album id already exists"})
+		return
+	}
 	c.IndentedJSON(http.StatusCreated, newAlbum)
 }
 

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"sync"
+	"sync/atomic"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -35,8 +36,14 @@ func (s *stubAlbumStore) get(id string) (album, bool) {
 	return album{}, false
 }
 
-func (s *stubAlbumStore) create(newAlbum album) {
+func (s *stubAlbumStore) create(newAlbum album) bool {
+	for _, candidate := range s.albums {
+		if candidate.ID == newAlbum.ID {
+			return false
+		}
+	}
 	s.albums = append(s.albums, newAlbum)
+	return true
 }
 
 func (s *stubAlbumStore) update(id string, updatedAlbum album) (album, bool) {
@@ -156,6 +163,87 @@ func TestPostAlbums(t *testing.T) {
 	}
 	if got := len(store.list()); got != 4 {
 		t.Fatalf("expected 4 albums after creation, got %d", got)
+	}
+}
+
+func TestPostAlbumsRejectsDuplicateID(t *testing.T) {
+	store := newAlbumStore(seedAlbums())
+	before := store.list()
+	router := setupRouterWithStore(store)
+	response := httptest.NewRecorder()
+	request := httptest.NewRequest(
+		http.MethodPost,
+		"/albums",
+		bytes.NewBufferString(`{"id":"2","title":"Duplicate","artist":"Another Artist","price":10}`),
+	)
+	request.Header.Set("Content-Type", "application/json")
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusConflict {
+		t.Fatalf("expected status %d, got %d", http.StatusConflict, response.Code)
+	}
+	if after := store.list(); fmt.Sprint(after) != fmt.Sprint(before) {
+		t.Fatalf("duplicate create changed albums from %#v to %#v", before, after)
+	}
+
+	var got errorResponse
+	if err := json.Unmarshal(response.Body.Bytes(), &got); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if got.Message != "album id already exists" {
+		t.Fatalf("expected duplicate-id message, got %q", got.Message)
+	}
+}
+
+func TestPostAlbumsCreatesDuplicateIDOnlyOnceConcurrently(t *testing.T) {
+	store := newAlbumStore(nil)
+	router := setupRouterWithStore(store)
+
+	const requestCount = 25
+	var created atomic.Int32
+	var conflicts atomic.Int32
+	errs := make(chan error, requestCount)
+	var wg sync.WaitGroup
+
+	for range requestCount {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			response := httptest.NewRecorder()
+			request := httptest.NewRequest(
+				http.MethodPost,
+				"/albums",
+				bytes.NewBufferString(`{"id":"shared","title":"Concurrent","artist":"Test Artist","price":10}`),
+			)
+			request.Header.Set("Content-Type", "application/json")
+
+			router.ServeHTTP(response, request)
+
+			switch response.Code {
+			case http.StatusCreated:
+				created.Add(1)
+			case http.StatusConflict:
+				conflicts.Add(1)
+			default:
+				errs <- fmt.Errorf("expected status 201 or 409, got %d", response.Code)
+			}
+		}()
+	}
+
+	wg.Wait()
+	close(errs)
+	for err := range errs {
+		t.Error(err)
+	}
+	if got := created.Load(); got != 1 {
+		t.Fatalf("expected one created response, got %d", got)
+	}
+	if got := conflicts.Load(); got != requestCount-1 {
+		t.Fatalf("expected %d conflict responses, got %d", requestCount-1, got)
+	}
+	if got := len(store.list()); got != 1 {
+		t.Fatalf("expected one stored album, got %d", got)
 	}
 }
 

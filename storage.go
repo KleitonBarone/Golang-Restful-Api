@@ -5,7 +5,7 @@ import "sync"
 type albumStore interface {
 	list() []album
 	get(id string) (album, bool)
-	create(album)
+	create(album) bool
 	update(id string, album album) (album, bool)
 	delete(id string) bool
 }
@@ -38,10 +38,16 @@ func (s *inMemoryAlbumStore) get(id string) (album, bool) {
 	return album{}, false
 }
 
-func (s *inMemoryAlbumStore) create(newAlbum album) {
+func (s *inMemoryAlbumStore) create(newAlbum album) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	for _, candidate := range s.albums {
+		if candidate.ID == newAlbum.ID {
+			return false
+		}
+	}
 	s.albums = append(s.albums, newAlbum)
+	return true
 }
 
 func (s *inMemoryAlbumStore) update(id string, updatedAlbum album) (album, bool) {
