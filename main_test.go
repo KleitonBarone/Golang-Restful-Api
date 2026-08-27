@@ -19,6 +19,24 @@ func testRouter(t *testing.T) *gin.Engine {
 	return setupRouterWithStore(newAlbumStore(seedAlbums()))
 }
 
+func TestListenAddress(t *testing.T) {
+	t.Run("uses the default when unset", func(t *testing.T) {
+		t.Setenv("LISTEN_ADDRESS", "")
+
+		if got, want := listenAddress(), "localhost:8080"; got != want {
+			t.Fatalf("expected listen address %q, got %q", want, got)
+		}
+	})
+
+	t.Run("uses the configured address", func(t *testing.T) {
+		t.Setenv("LISTEN_ADDRESS", ":9090")
+
+		if got, want := listenAddress(), ":9090"; got != want {
+			t.Fatalf("expected listen address %q, got %q", want, got)
+		}
+	})
+}
+
 type stubAlbumStore struct {
 	albums []album
 }

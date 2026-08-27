@@ -15,7 +15,11 @@ swag init -g router.go
 
 ## Getting Started
 
-Run the following command:
+Run the service:
+
 ```
-go run main.go
+go run .
 ```
+
+It listens on `localhost:8080` by default. Set `LISTEN_ADDRESS` to bind to a
+different address, such as `:9090`.

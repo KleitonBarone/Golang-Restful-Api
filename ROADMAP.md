@@ -2,7 +2,6 @@
 
 ## Next
 
-- Make the listen address configurable and return startup failures to the process instead of hard-coding `localhost:8080` and discarding `router.Run` errors.
 - Check generated Swagger files against handler annotations in CI so documentation drift fails before merge.
 
 ## Completed
@@ -15,3 +14,4 @@
 - Continuous integration runs tests, static analysis, and builds for pushes and pull requests.
 - HTTP handlers depend on a storage abstraction with a synchronized in-memory implementation, allowing persistence to be added without changing route behavior.
 - Album creation rejects duplicate IDs atomically, including concurrent requests, so lookup and mutation routes retain one record per ID.
+- The server listen address is configurable through `LISTEN_ADDRESS`, and startup failures terminate the process with an error.
