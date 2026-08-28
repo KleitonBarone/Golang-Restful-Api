@@ -9,8 +9,7 @@ Once the server is running, visit http://localhost:8080/docs for interactive API
 After modifying Swagger annotations in the Go source files, regenerate the spec:
 
 ```
-go install github.com/swaggo/swag/cmd/swag@latest
-swag init -g router.go
+go run github.com/swaggo/swag/cmd/swag@v1.16.6 init -g router.go
 ```
 
 ## Getting Started

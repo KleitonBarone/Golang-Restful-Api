@@ -2,10 +2,11 @@
 
 ## Next
 
-- Check generated Swagger files against handler annotations in CI so documentation drift fails before merge.
+No capabilities are currently scheduled.
 
 ## Completed
 
+- CI regenerates Swagger files from handler annotations and rejects documentation drift.
 - Route-level test coverage for the existing list, lookup, and create behavior.
 - Create requests reject malformed or incomplete albums with documented client-error responses.
 - Shared in-memory album access is synchronized for concurrent requests.

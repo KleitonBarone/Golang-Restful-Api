@@ -23,6 +23,11 @@ jobs:
           go-version-file: go.mod
           cache: true
 
+      - name: Check generated API documentation
+        run: |
+          go run github.com/swaggo/swag/cmd/swag@v1.16.6 init -g router.go
+          git diff --exit-code -- docs
+
       - name: Test
         run: go test ./...
 
