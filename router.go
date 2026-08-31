@@ -26,6 +26,8 @@ func setupRouter() *gin.Engine {
 }
 
 func setupRouterWithStore(store albumStore) *gin.Engine {
+	gin.EnableJsonDecoderDisallowUnknownFields()
+
 	router := gin.Default()
 	handler := albumHandler{store: store}
 

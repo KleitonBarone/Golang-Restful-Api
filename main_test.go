@@ -302,6 +302,7 @@ func TestPostAlbumsValidatesRequest(t *testing.T) {
 		{name: "missing artist", body: `{"id":"4","title":"Kind of Blue","price":29.99}`, wantMessage: "artist is required"},
 		{name: "zero price", body: `{"id":"4","title":"Kind of Blue","artist":"Miles Davis","price":0}`, wantMessage: "price must be greater than zero"},
 		{name: "negative price", body: `{"id":"4","title":"Kind of Blue","artist":"Miles Davis","price":-1}`, wantMessage: "price must be greater than zero"},
+		{name: "unknown field", body: `{"id":"4","title":"Kind of Blue","artist":"Miles Davis","price":29.99,"genre":"jazz"}`, wantMessage: "invalid request body"},
 	}
 
 	for _, tt := range tests {
@@ -365,6 +366,7 @@ func TestPutAlbumByIDRejectsInvalidRequests(t *testing.T) {
 		wantMessage string
 	}{
 		{name: "malformed body", path: "/albums/2", body: `{"id":`, wantStatus: http.StatusBadRequest, wantMessage: "invalid request body"},
+		{name: "unknown field", path: "/albums/2", body: `{"id":"2","title":"Night Lights","artist":"Gerry Mulligan","price":24.99,"genre":"jazz"}`, wantStatus: http.StatusBadRequest, wantMessage: "invalid request body"},
 		{name: "invalid album", path: "/albums/2", body: `{"id":"2","title":"","artist":"Gerry Mulligan","price":24.99}`, wantStatus: http.StatusBadRequest, wantMessage: "title is required"},
 		{name: "mismatched id", path: "/albums/2", body: `{"id":"3","title":"Night Lights","artist":"Gerry Mulligan","price":24.99}`, wantStatus: http.StatusBadRequest, wantMessage: "album id must match path id"},
 		{name: "missing album", path: "/albums/missing", body: `{"id":"missing","title":"Night Lights","artist":"Gerry Mulligan","price":24.99}`, wantStatus: http.StatusNotFound, wantMessage: "album not found"},
