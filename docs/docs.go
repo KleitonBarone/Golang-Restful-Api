@@ -78,6 +78,12 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/main.errorResponse"
                         }
+                    },
+                    "413": {
+                        "description": "Request Entity Too Large",
+                        "schema": {
+                            "$ref": "#/definitions/main.errorResponse"
+                        }
                     }
                 }
             }
@@ -164,6 +170,12 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/main.errorResponse"
+                        }
+                    },
+                    "413": {
+                        "description": "Request Entity Too Large",
                         "schema": {
                             "$ref": "#/definitions/main.errorResponse"
                         }

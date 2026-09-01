@@ -1,10 +1,13 @@
 package main
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
+
+const maxAlbumRequestBodyBytes int64 = 64 << 10
 
 type albumHandler struct {
 	store albumStore
@@ -31,12 +34,11 @@ func (h albumHandler) getAlbums(c *gin.Context) {
 // @Success 201 {object} album
 // @Failure 400 {object} errorResponse
 // @Failure 409 {object} errorResponse
+// @Failure 413 {object} errorResponse
 // @Router /albums [post]
 func (h albumHandler) postAlbums(c *gin.Context) {
-	var newAlbum album
-
-	if err := c.ShouldBindJSON(&newAlbum); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: "invalid request body"})
+	newAlbum, ok := decodeAlbumRequest(c)
+	if !ok {
 		return
 	}
 	if validationError := validateAlbum(newAlbum); validationError != "" {
@@ -82,12 +84,11 @@ func (h albumHandler) getAlbumByID(c *gin.Context) {
 // @Success 200 {object} album
 // @Failure 400 {object} errorResponse
 // @Failure 404 {object} errorResponse
+// @Failure 413 {object} errorResponse
 // @Router /albums/{id} [put]
 func (h albumHandler) putAlbumByID(c *gin.Context) {
-	var updatedAlbum album
-
-	if err := c.ShouldBindJSON(&updatedAlbum); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: "invalid request body"})
+	updatedAlbum, ok := decodeAlbumRequest(c)
+	if !ok {
 		return
 	}
 	if validationError := validateAlbum(updatedAlbum); validationError != "" {
@@ -99,13 +100,32 @@ func (h albumHandler) putAlbumByID(c *gin.Context) {
 		return
 	}
 
-	updatedAlbum, ok := h.store.update(c.Param("id"), updatedAlbum)
+	updatedAlbum, ok = h.store.update(c.Param("id"), updatedAlbum)
 	if !ok {
 		c.IndentedJSON(http.StatusNotFound, errorResponse{Message: "album not found"})
 		return
 	}
 
 	c.IndentedJSON(http.StatusOK, updatedAlbum)
+}
+
+// decodeAlbumRequest applies the shared mutation body limit before decoding JSON.
+func decodeAlbumRequest(c *gin.Context) (album, bool) {
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxAlbumRequestBodyBytes)
+
+	var requestedAlbum album
+	if err := c.ShouldBindJSON(&requestedAlbum); err != nil {
+		var maxBytesError *http.MaxBytesError
+		if errors.As(err, &maxBytesError) {
+			c.IndentedJSON(http.StatusRequestEntityTooLarge, errorResponse{Message: "request body too large"})
+			return album{}, false
+		}
+
+		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: "invalid request body"})
+		return album{}, false
+	}
+
+	return requestedAlbum, true
 }
 
 // deleteAlbumByID removes the album whose ID matches the path parameter.

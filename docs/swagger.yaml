@@ -64,6 +64,10 @@ paths:
           description: Conflict
           schema:
             $ref: '#/definitions/main.errorResponse'
+        "413":
+          description: Request Entity Too Large
+          schema:
+            $ref: '#/definitions/main.errorResponse'
       summary: Create an album
       tags:
       - albums
@@ -141,6 +145,10 @@ paths:
             $ref: '#/definitions/main.errorResponse'
         "404":
           description: Not Found
+          schema:
+            $ref: '#/definitions/main.errorResponse'
+        "413":
+          description: Request Entity Too Large
           schema:
             $ref: '#/definitions/main.errorResponse'
       summary: Update an album

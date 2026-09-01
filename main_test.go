@@ -291,6 +291,35 @@ func TestPostAlbumsRejectsMalformedJSON(t *testing.T) {
 	}
 }
 
+func TestPostAlbumsRejectsOversizedBody(t *testing.T) {
+	store := newAlbumStore(seedAlbums())
+	before := store.list()
+	response := httptest.NewRecorder()
+	request := httptest.NewRequest(
+		http.MethodPost,
+		"/albums",
+		bytes.NewBufferString(fmt.Sprintf(`{"id":"4","title":"%s","artist":"Miles Davis","price":29.99}`, string(bytes.Repeat([]byte("x"), int(maxAlbumRequestBodyBytes))))),
+	)
+	request.Header.Set("Content-Type", "application/json")
+
+	setupRouterWithStore(store).ServeHTTP(response, request)
+
+	if response.Code != http.StatusRequestEntityTooLarge {
+		t.Fatalf("expected status %d, got %d", http.StatusRequestEntityTooLarge, response.Code)
+	}
+	if after := store.list(); fmt.Sprint(after) != fmt.Sprint(before) {
+		t.Fatalf("oversized request changed albums from %#v to %#v", before, after)
+	}
+
+	var got errorResponse
+	if err := json.Unmarshal(response.Body.Bytes(), &got); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if got.Message != "request body too large" {
+		t.Fatalf("expected oversized-body message, got %q", got.Message)
+	}
+}
+
 func TestPostAlbumsValidatesRequest(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -397,6 +426,35 @@ func TestPutAlbumByIDRejectsInvalidRequests(t *testing.T) {
 				t.Fatalf("failed update changed albums from %#v to %#v", before, after)
 			}
 		})
+	}
+}
+
+func TestPutAlbumByIDRejectsOversizedBody(t *testing.T) {
+	store := newAlbumStore(seedAlbums())
+	before := store.list()
+	response := httptest.NewRecorder()
+	request := httptest.NewRequest(
+		http.MethodPut,
+		"/albums/2",
+		bytes.NewBufferString(fmt.Sprintf(`{"id":"2","title":"%s","artist":"Gerry Mulligan","price":24.99}`, string(bytes.Repeat([]byte("x"), int(maxAlbumRequestBodyBytes))))),
+	)
+	request.Header.Set("Content-Type", "application/json")
+
+	setupRouterWithStore(store).ServeHTTP(response, request)
+
+	if response.Code != http.StatusRequestEntityTooLarge {
+		t.Fatalf("expected status %d, got %d", http.StatusRequestEntityTooLarge, response.Code)
+	}
+	if after := store.list(); fmt.Sprint(after) != fmt.Sprint(before) {
+		t.Fatalf("oversized request changed albums from %#v to %#v", before, after)
+	}
+
+	var got errorResponse
+	if err := json.Unmarshal(response.Body.Bytes(), &got); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if got.Message != "request body too large" {
+		t.Fatalf("expected oversized-body message, got %q", got.Message)
 	}
 }
 
