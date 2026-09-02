@@ -22,3 +22,6 @@ go run .
 
 It listens on `localhost:8080` by default. Set `LISTEN_ADDRESS` to bind to a
 different address, such as `:9090`.
+
+On an interrupt or termination signal, the server stops accepting new
+connections and gives in-flight requests up to five seconds to finish.

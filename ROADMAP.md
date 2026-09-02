@@ -2,11 +2,11 @@
 
 ## Next
 
-- Shut the HTTP server down gracefully on process signals so in-flight requests can finish within a fixed timeout.
 - Add a lightweight health endpoint for local and automated readiness checks.
 
 ## Completed
 
+- The HTTP server handles interrupt and termination signals by allowing in-flight requests up to five seconds to finish before shutdown.
 - JSON mutation request bodies are capped at 64 KiB and oversized payloads receive a 413 response without changing stored albums.
 - Create and update requests reject unknown JSON fields instead of silently accepting misspelled input.
 - CI regenerates Swagger files from handler annotations and rejects documentation drift.

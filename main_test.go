@@ -2,13 +2,17 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -35,6 +39,64 @@ func TestListenAddress(t *testing.T) {
 			t.Fatalf("expected listen address %q, got %q", want, got)
 		}
 	})
+}
+
+func TestRunHTTPServerDrainsInFlightRequestAfterCancellation(t *testing.T) {
+	requestStarted := make(chan struct{})
+	releaseRequest := make(chan struct{})
+	server := &http.Server{
+		Handler: http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
+			close(requestStarted)
+			<-releaseRequest
+			_, _ = response.Write([]byte("done"))
+		}),
+	}
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("listen: %v", err)
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	serverDone := make(chan error, 1)
+	go func() {
+		serverDone <- runHTTPServer(ctx, server, listener, time.Second)
+	}()
+
+	responseDone := make(chan error, 1)
+	go func() {
+		response, err := http.Get("http://" + listener.Addr().String())
+		if err != nil {
+			responseDone <- err
+			return
+		}
+		defer response.Body.Close()
+		body, err := io.ReadAll(response.Body)
+		if err == nil && string(body) != "done" {
+			err = fmt.Errorf("expected response body %q, got %q", "done", body)
+		}
+		responseDone <- err
+	}()
+
+	select {
+	case <-requestStarted:
+	case <-time.After(time.Second):
+		t.Fatal("request did not reach the server")
+	}
+	cancel()
+
+	select {
+	case err := <-serverDone:
+		t.Fatalf("server returned before the in-flight request completed: %v", err)
+	case <-time.After(50 * time.Millisecond):
+	}
+
+	close(releaseRequest)
+	if err := <-responseDone; err != nil {
+		t.Fatalf("request failed during graceful shutdown: %v", err)
+	}
+	if err := <-serverDone; err != nil {
+		t.Fatalf("run server: %v", err)
+	}
 }
 
 type stubAlbumStore struct {
