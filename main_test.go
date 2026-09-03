@@ -166,6 +166,25 @@ func TestRouterAcceptsAlbumStoreImplementation(t *testing.T) {
 	}
 }
 
+func TestHealth(t *testing.T) {
+	router := testRouter(t)
+	response := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/health", nil)
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, response.Code)
+	}
+	var got map[string]string
+	if err := json.Unmarshal(response.Body.Bytes(), &got); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if got["status"] != "ok" {
+		t.Fatalf("expected healthy status, got %#v", got)
+	}
+}
+
 func TestGetAlbums(t *testing.T) {
 	router := testRouter(t)
 	response := httptest.NewRecorder()

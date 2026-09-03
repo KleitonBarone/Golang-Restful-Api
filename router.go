@@ -31,6 +31,9 @@ func setupRouterWithStore(store albumStore) *gin.Engine {
 	router := gin.Default()
 	handler := albumHandler{store: store}
 
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
 	router.GET("/albums", handler.getAlbums)
 	router.GET("/albums/:id", handler.getAlbumByID)
 	router.POST("/albums", handler.postAlbums)
