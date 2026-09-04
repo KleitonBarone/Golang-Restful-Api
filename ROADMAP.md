@@ -2,10 +2,17 @@
 
 ## Next
 
-No capabilities are currently scheduled.
+1. Bound HTTP request-header reads and idle connections so slow clients cannot
+   hold server resources indefinitely.
+2. Add validated `limit` and `offset` pagination to `GET /albums` while
+   preserving the current response for requests without pagination parameters.
+3. Reject non-JSON media types on album mutation routes with a documented 415
+   response.
 
 ## Completed
 
+- Album mutation routes reject request bodies containing more than one JSON
+  value instead of accepting the first value and ignoring the rest.
 - A lightweight `GET /health` endpoint returns a stable response for local and automated readiness checks.
 - The HTTP server handles interrupt and termination signals by allowing in-flight requests up to five seconds to finish before shutdown.
 - JSON mutation request bodies are capped at 64 KiB and oversized payloads receive a 413 response without changing stored albums.

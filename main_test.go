@@ -413,6 +413,7 @@ func TestPostAlbumsValidatesRequest(t *testing.T) {
 		{name: "zero price", body: `{"id":"4","title":"Kind of Blue","artist":"Miles Davis","price":0}`, wantMessage: "price must be greater than zero"},
 		{name: "negative price", body: `{"id":"4","title":"Kind of Blue","artist":"Miles Davis","price":-1}`, wantMessage: "price must be greater than zero"},
 		{name: "unknown field", body: `{"id":"4","title":"Kind of Blue","artist":"Miles Davis","price":29.99,"genre":"jazz"}`, wantMessage: "invalid request body"},
+		{name: "trailing JSON value", body: `{"id":"4","title":"Kind of Blue","artist":"Miles Davis","price":29.99} {}`, wantMessage: "invalid request body"},
 	}
 
 	for _, tt := range tests {
