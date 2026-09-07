@@ -14,8 +14,10 @@ import (
 )
 
 const (
-	defaultListenAddress = "localhost:8080"
-	shutdownTimeout      = 5 * time.Second
+	defaultListenAddress  = "localhost:8080"
+	requestHeaderTimeout  = 5 * time.Second
+	idleConnectionTimeout = 60 * time.Second
+	shutdownTimeout       = 5 * time.Second
 )
 
 func main() {
@@ -33,8 +35,16 @@ func run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	server := &http.Server{Handler: setupRouter()}
+	server := newHTTPServer(setupRouter())
 	return runHTTPServer(ctx, server, listener, shutdownTimeout)
+}
+
+func newHTTPServer(handler http.Handler) *http.Server {
+	return &http.Server{
+		Handler:           handler,
+		ReadHeaderTimeout: requestHeaderTimeout,
+		IdleTimeout:       idleConnectionTimeout,
+	}
 }
 
 func runHTTPServer(ctx context.Context, server *http.Server, listener net.Listener, timeout time.Duration) error {

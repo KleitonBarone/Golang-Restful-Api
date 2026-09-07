@@ -2,15 +2,15 @@
 
 ## Next
 
-1. Bound HTTP request-header reads and idle connections so slow clients cannot
-   hold server resources indefinitely.
-2. Add validated `limit` and `offset` pagination to `GET /albums` while
+1. Add validated `limit` and `offset` pagination to `GET /albums` while
    preserving the current response for requests without pagination parameters.
-3. Reject non-JSON media types on album mutation routes with a documented 415
+2. Reject non-JSON media types on album mutation routes with a documented 415
    response.
 
 ## Completed
 
+- HTTP request-header reads and idle connections have explicit timeouts so slow
+  clients cannot hold server resources indefinitely.
 - Album mutation routes reject request bodies containing more than one JSON
   value instead of accepting the first value and ignoring the rest.
 - A lightweight `GET /health` endpoint returns a stable response for local and automated readiness checks.

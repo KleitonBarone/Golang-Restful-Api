@@ -41,6 +41,17 @@ func TestListenAddress(t *testing.T) {
 	})
 }
 
+func TestNewHTTPServerBoundsConnectionWaits(t *testing.T) {
+	server := newHTTPServer(http.NotFoundHandler())
+
+	if got, want := server.ReadHeaderTimeout, 5*time.Second; got != want {
+		t.Fatalf("expected read header timeout %s, got %s", want, got)
+	}
+	if got, want := server.IdleTimeout, 60*time.Second; got != want {
+		t.Fatalf("expected idle timeout %s, got %s", want, got)
+	}
+}
+
 func TestRunHTTPServerDrainsInFlightRequestAfterCancellation(t *testing.T) {
 	requestStarted := make(chan struct{})
 	releaseRequest := make(chan struct{})
