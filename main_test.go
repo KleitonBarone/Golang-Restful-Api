@@ -217,6 +217,77 @@ func TestGetAlbums(t *testing.T) {
 	}
 }
 
+func TestGetAlbumsPagination(t *testing.T) {
+	tests := []struct {
+		name string
+		path string
+		want []album
+	}{
+		{name: "limit", path: "/albums?limit=2", want: seedAlbums()[:2]},
+		{name: "offset", path: "/albums?offset=1", want: seedAlbums()[1:]},
+		{name: "limit and offset", path: "/albums?limit=1&offset=1", want: seedAlbums()[1:2]},
+		{name: "limit exceeds collection", path: "/albums?limit=10", want: seedAlbums()},
+		{name: "offset reaches end", path: "/albums?offset=3", want: []album{}},
+		{name: "offset exceeds collection", path: "/albums?offset=10", want: []album{}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			response := httptest.NewRecorder()
+			request := httptest.NewRequest(http.MethodGet, tt.path, nil)
+
+			testRouter(t).ServeHTTP(response, request)
+
+			if response.Code != http.StatusOK {
+				t.Fatalf("expected status %d, got %d", http.StatusOK, response.Code)
+			}
+			var got []album
+			if err := json.Unmarshal(response.Body.Bytes(), &got); err != nil {
+				t.Fatalf("decode response: %v", err)
+			}
+			if fmt.Sprint(got) != fmt.Sprint(tt.want) {
+				t.Fatalf("expected albums %#v, got %#v", tt.want, got)
+			}
+		})
+	}
+}
+
+func TestGetAlbumsRejectsInvalidPagination(t *testing.T) {
+	tests := []struct {
+		name        string
+		path        string
+		wantMessage string
+	}{
+		{name: "empty limit", path: "/albums?limit=", wantMessage: "limit must be a positive integer"},
+		{name: "zero limit", path: "/albums?limit=0", wantMessage: "limit must be a positive integer"},
+		{name: "negative limit", path: "/albums?limit=-1", wantMessage: "limit must be a positive integer"},
+		{name: "non-integer limit", path: "/albums?limit=one", wantMessage: "limit must be a positive integer"},
+		{name: "empty offset", path: "/albums?offset=", wantMessage: "offset must be a non-negative integer"},
+		{name: "negative offset", path: "/albums?offset=-1", wantMessage: "offset must be a non-negative integer"},
+		{name: "non-integer offset", path: "/albums?offset=one", wantMessage: "offset must be a non-negative integer"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			response := httptest.NewRecorder()
+			request := httptest.NewRequest(http.MethodGet, tt.path, nil)
+
+			testRouter(t).ServeHTTP(response, request)
+
+			if response.Code != http.StatusBadRequest {
+				t.Fatalf("expected status %d, got %d", http.StatusBadRequest, response.Code)
+			}
+			var got errorResponse
+			if err := json.Unmarshal(response.Body.Bytes(), &got); err != nil {
+				t.Fatalf("decode response: %v", err)
+			}
+			if got.Message != tt.wantMessage {
+				t.Fatalf("expected message %q, got %q", tt.wantMessage, got.Message)
+			}
+		})
+	}
+}
+
 func TestGetAlbumByID(t *testing.T) {
 	router := testRouter(t)
 	response := httptest.NewRecorder()

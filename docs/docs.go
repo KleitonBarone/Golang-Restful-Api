@@ -25,6 +25,22 @@ const docTemplate = `{
                     "albums"
                 ],
                 "summary": "List all albums",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Maximum number of albums to return",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "minimum": 0,
+                        "type": "integer",
+                        "description": "Number of albums to skip",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -33,6 +49,12 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/main.album"
                             }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/main.errorResponse"
                         }
                     }
                 }

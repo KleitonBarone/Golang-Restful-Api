@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,10 +21,62 @@ type albumHandler struct {
 // @Description Get all albums in the collection
 // @Tags albums
 // @Produce json
+// @Param limit query int false "Maximum number of albums to return" minimum(1)
+// @Param offset query int false "Number of albums to skip" minimum(0)
 // @Success 200 {array} album
+// @Failure 400 {object} errorResponse
 // @Router /albums [get]
 func (h albumHandler) getAlbums(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, h.store.list())
+	limit, hasLimit, ok := positiveQueryInt(c, "limit")
+	if !ok {
+		return
+	}
+	offset, hasOffset, ok := nonNegativeQueryInt(c, "offset")
+	if !ok {
+		return
+	}
+
+	albums := h.store.list()
+	if !hasLimit && !hasOffset {
+		c.IndentedJSON(http.StatusOK, albums)
+		return
+	}
+	if offset >= len(albums) {
+		c.IndentedJSON(http.StatusOK, albums[len(albums):])
+		return
+	}
+
+	albums = albums[offset:]
+	if hasLimit && limit < len(albums) {
+		albums = albums[:limit]
+	}
+	c.IndentedJSON(http.StatusOK, albums)
+}
+
+func positiveQueryInt(c *gin.Context, name string) (int, bool, bool) {
+	raw, exists := c.GetQuery(name)
+	if !exists {
+		return 0, false, true
+	}
+	value, err := strconv.Atoi(raw)
+	if err != nil || value <= 0 {
+		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: name + " must be a positive integer"})
+		return 0, true, false
+	}
+	return value, true, true
+}
+
+func nonNegativeQueryInt(c *gin.Context, name string) (int, bool, bool) {
+	raw, exists := c.GetQuery(name)
+	if !exists {
+		return 0, false, true
+	}
+	value, err := strconv.Atoi(raw)
+	if err != nil || value < 0 {
+		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: name + " must be a non-negative integer"})
+		return 0, true, false
+	}
+	return value, true, true
 }
 
 // postAlbums adds an album from JSON received in the request body.

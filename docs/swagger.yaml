@@ -26,6 +26,17 @@ paths:
   /albums:
     get:
       description: Get all albums in the collection
+      parameters:
+      - description: Maximum number of albums to return
+        in: query
+        minimum: 1
+        name: limit
+        type: integer
+      - description: Number of albums to skip
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
       produces:
       - application/json
       responses:
@@ -35,6 +46,10 @@ paths:
             items:
               $ref: '#/definitions/main.album'
             type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.errorResponse'
       summary: List all albums
       tags:
       - albums
