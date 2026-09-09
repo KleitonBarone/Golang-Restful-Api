@@ -83,6 +83,10 @@ paths:
           description: Request Entity Too Large
           schema:
             $ref: '#/definitions/main.errorResponse'
+        "415":
+          description: Unsupported Media Type
+          schema:
+            $ref: '#/definitions/main.errorResponse'
       summary: Create an album
       tags:
       - albums
@@ -164,6 +168,10 @@ paths:
             $ref: '#/definitions/main.errorResponse'
         "413":
           description: Request Entity Too Large
+          schema:
+            $ref: '#/definitions/main.errorResponse'
+        "415":
+          description: Unsupported Media Type
           schema:
             $ref: '#/definitions/main.errorResponse'
       summary: Update an album

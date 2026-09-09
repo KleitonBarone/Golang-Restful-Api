@@ -2,11 +2,12 @@
 
 ## Next
 
-1. Reject non-JSON media types on album mutation routes with a documented 415
-   response.
+No capabilities are currently scheduled.
 
 ## Completed
 
+- Album mutation routes reject non-JSON media types with a documented 415
+  response.
 - `GET /albums` accepts validated `limit` and `offset` pagination while requests
   without pagination parameters retain the full-list response.
 - HTTP request-header reads and idle connections have explicit timeouts so slow

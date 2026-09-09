@@ -106,6 +106,12 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/main.errorResponse"
                         }
+                    },
+                    "415": {
+                        "description": "Unsupported Media Type",
+                        "schema": {
+                            "$ref": "#/definitions/main.errorResponse"
+                        }
                     }
                 }
             }
@@ -198,6 +204,12 @@ const docTemplate = `{
                     },
                     "413": {
                         "description": "Request Entity Too Large",
+                        "schema": {
+                            "$ref": "#/definitions/main.errorResponse"
+                        }
+                    },
+                    "415": {
+                        "description": "Unsupported Media Type",
                         "schema": {
                             "$ref": "#/definitions/main.errorResponse"
                         }

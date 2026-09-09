@@ -347,6 +347,55 @@ func TestPostAlbums(t *testing.T) {
 	}
 }
 
+func TestAlbumMutationsRejectNonJSONContentType(t *testing.T) {
+	tests := []struct {
+		name   string
+		method string
+		path   string
+		body   string
+	}{
+		{
+			name:   "create",
+			method: http.MethodPost,
+			path:   "/albums",
+			body:   `{"id":"4","title":"Kind of Blue","artist":"Miles Davis","price":29.99}`,
+		},
+		{
+			name:   "update",
+			method: http.MethodPut,
+			path:   "/albums/2",
+			body:   `{"id":"2","title":"Night Lights","artist":"Gerry Mulligan","price":24.99}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			store := newAlbumStore(seedAlbums())
+			before := store.list()
+			response := httptest.NewRecorder()
+			request := httptest.NewRequest(tt.method, tt.path, bytes.NewBufferString(tt.body))
+			request.Header.Set("Content-Type", "text/plain")
+
+			setupRouterWithStore(store).ServeHTTP(response, request)
+
+			if response.Code != http.StatusUnsupportedMediaType {
+				t.Fatalf("expected status %d, got %d", http.StatusUnsupportedMediaType, response.Code)
+			}
+			if after := store.list(); fmt.Sprint(after) != fmt.Sprint(before) {
+				t.Fatalf("unsupported media type changed albums from %#v to %#v", before, after)
+			}
+
+			var got errorResponse
+			if err := json.Unmarshal(response.Body.Bytes(), &got); err != nil {
+				t.Fatalf("decode response: %v", err)
+			}
+			if got.Message != "content type must be application/json" {
+				t.Fatalf("expected unsupported-media-type message, got %q", got.Message)
+			}
+		})
+	}
+}
+
 func TestPostAlbumsRejectsDuplicateID(t *testing.T) {
 	store := newAlbumStore(seedAlbums())
 	before := store.list()

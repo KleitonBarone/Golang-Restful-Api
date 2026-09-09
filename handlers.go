@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"mime"
 	"net/http"
 	"strconv"
 
@@ -90,6 +91,7 @@ func nonNegativeQueryInt(c *gin.Context, name string) (int, bool, bool) {
 // @Failure 400 {object} errorResponse
 // @Failure 409 {object} errorResponse
 // @Failure 413 {object} errorResponse
+// @Failure 415 {object} errorResponse
 // @Router /albums [post]
 func (h albumHandler) postAlbums(c *gin.Context) {
 	newAlbum, ok := decodeAlbumRequest(c)
@@ -140,6 +142,7 @@ func (h albumHandler) getAlbumByID(c *gin.Context) {
 // @Failure 400 {object} errorResponse
 // @Failure 404 {object} errorResponse
 // @Failure 413 {object} errorResponse
+// @Failure 415 {object} errorResponse
 // @Router /albums/{id} [put]
 func (h albumHandler) putAlbumByID(c *gin.Context) {
 	updatedAlbum, ok := decodeAlbumRequest(c)
@@ -164,8 +167,14 @@ func (h albumHandler) putAlbumByID(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, updatedAlbum)
 }
 
-// decodeAlbumRequest applies the shared mutation body limit before decoding JSON.
+// decodeAlbumRequest validates the media type and applies the shared body limit before decoding JSON.
 func decodeAlbumRequest(c *gin.Context) (album, bool) {
+	mediaType, _, err := mime.ParseMediaType(c.GetHeader("Content-Type"))
+	if err != nil || mediaType != "application/json" {
+		c.IndentedJSON(http.StatusUnsupportedMediaType, errorResponse{Message: "content type must be application/json"})
+		return album{}, false
+	}
+
 	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxAlbumRequestBodyBytes)
 
 	var requestedAlbum album
