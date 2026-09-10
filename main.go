@@ -16,6 +16,7 @@ import (
 const (
 	defaultListenAddress  = "localhost:8080"
 	requestReadTimeout    = 10 * time.Second
+	responseWriteTimeout  = 10 * time.Second
 	requestHeaderTimeout  = 5 * time.Second
 	idleConnectionTimeout = 60 * time.Second
 	shutdownTimeout       = 5 * time.Second
@@ -44,6 +45,7 @@ func newHTTPServer(handler http.Handler) *http.Server {
 	return &http.Server{
 		Handler:           handler,
 		ReadTimeout:       requestReadTimeout,
+		WriteTimeout:      responseWriteTimeout,
 		ReadHeaderTimeout: requestHeaderTimeout,
 		IdleTimeout:       idleConnectionTimeout,
 	}
