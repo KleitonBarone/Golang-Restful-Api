@@ -2,10 +2,15 @@
 
 ## Next
 
-No capabilities are currently scheduled.
+1. Set an explicit response-write deadline so slow readers cannot hold server
+   resources after handlers finish their bounded work.
+2. Cap accepted request-header bytes at a documented service limit instead of
+   relying on the `net/http` default.
 
 ## Completed
 
+- Complete HTTP request reads have a ten-second deadline so clients cannot
+  trickle album mutation bodies indefinitely.
 - Album mutation routes reject non-JSON media types with a documented 415
   response.
 - `GET /albums` accepts validated `limit` and `offset` pagination while requests

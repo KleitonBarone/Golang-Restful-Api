@@ -44,6 +44,9 @@ func TestListenAddress(t *testing.T) {
 func TestNewHTTPServerBoundsConnectionWaits(t *testing.T) {
 	server := newHTTPServer(http.NotFoundHandler())
 
+	if got, want := server.ReadTimeout, 10*time.Second; got != want {
+		t.Fatalf("expected read timeout %s, got %s", want, got)
+	}
 	if got, want := server.ReadHeaderTimeout, 5*time.Second; got != want {
 		t.Fatalf("expected read header timeout %s, got %s", want, got)
 	}
