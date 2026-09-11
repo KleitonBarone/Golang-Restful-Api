@@ -2,11 +2,12 @@
 
 ## Next
 
-1. Cap accepted request-header bytes at a documented service limit instead of
-   relying on the `net/http` default.
+No capabilities are currently scheduled.
 
 ## Completed
 
+- Request headers are capped at a documented 16 KiB service limit instead of
+  relying on the larger `net/http` default.
 - HTTP response writes have a ten-second deadline so slow readers cannot hold
   server resources after handlers finish their bounded work.
 - Complete HTTP request reads have a ten-second deadline so clients cannot

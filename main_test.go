@@ -53,6 +53,9 @@ func TestNewHTTPServerBoundsConnectionWaits(t *testing.T) {
 	if got, want := server.ReadHeaderTimeout, 5*time.Second; got != want {
 		t.Fatalf("expected read header timeout %s, got %s", want, got)
 	}
+	if got, want := server.MaxHeaderBytes, 16<<10; got != want {
+		t.Fatalf("expected maximum header size %d bytes, got %d", want, got)
+	}
 	if got, want := server.IdleTimeout, 60*time.Second; got != want {
 		t.Fatalf("expected idle timeout %s, got %s", want, got)
 	}

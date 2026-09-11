@@ -29,4 +29,4 @@ returns `200 OK` with `{"status":"ok"}`.
 On an interrupt or termination signal, the server stops accepting new
 connections and gives in-flight requests up to five seconds to finish.
 The server allows at most ten seconds to read each complete request and ten
-seconds to write its response.
+seconds to write its response. Request headers are limited to 16 KiB.

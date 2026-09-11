@@ -18,6 +18,7 @@ const (
 	requestReadTimeout    = 10 * time.Second
 	responseWriteTimeout  = 10 * time.Second
 	requestHeaderTimeout  = 5 * time.Second
+	maxRequestHeaderBytes = 16 << 10
 	idleConnectionTimeout = 60 * time.Second
 	shutdownTimeout       = 5 * time.Second
 )
@@ -47,6 +48,7 @@ func newHTTPServer(handler http.Handler) *http.Server {
 		ReadTimeout:       requestReadTimeout,
 		WriteTimeout:      responseWriteTimeout,
 		ReadHeaderTimeout: requestHeaderTimeout,
+		MaxHeaderBytes:    maxRequestHeaderBytes,
 		IdleTimeout:       idleConnectionTimeout,
 	}
 }
