@@ -191,6 +191,12 @@ func decodeAlbumRequest(c *gin.Context) (album, bool) {
 		return album{}, false
 	}
 	if err := decoder.Decode(&struct{}{}); !errors.Is(err, io.EOF) {
+		var maxBytesError *http.MaxBytesError
+		if errors.As(err, &maxBytesError) {
+			c.IndentedJSON(http.StatusRequestEntityTooLarge, errorResponse{Message: "request body too large"})
+			return album{}, false
+		}
+
 		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: "invalid request body"})
 		return album{}, false
 	}

@@ -541,6 +541,35 @@ func TestPostAlbumsRejectsOversizedBody(t *testing.T) {
 	}
 }
 
+func TestPostAlbumsRejectsOversizedTrailingData(t *testing.T) {
+	store := newAlbumStore(seedAlbums())
+	before := store.list()
+	body := append(
+		[]byte(`{"id":"4","title":"Kind of Blue","artist":"Miles Davis","price":29.99}`),
+		bytes.Repeat([]byte(" "), int(maxAlbumRequestBodyBytes))...,
+	)
+	response := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodPost, "/albums", bytes.NewReader(body))
+	request.Header.Set("Content-Type", "application/json")
+
+	setupRouterWithStore(store).ServeHTTP(response, request)
+
+	if response.Code != http.StatusRequestEntityTooLarge {
+		t.Fatalf("expected status %d, got %d", http.StatusRequestEntityTooLarge, response.Code)
+	}
+	if after := store.list(); fmt.Sprint(after) != fmt.Sprint(before) {
+		t.Fatalf("oversized request changed albums from %#v to %#v", before, after)
+	}
+
+	var got errorResponse
+	if err := json.Unmarshal(response.Body.Bytes(), &got); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if got.Message != "request body too large" {
+		t.Fatalf("expected oversized-body message, got %q", got.Message)
+	}
+}
+
 func TestPostAlbumsValidatesRequest(t *testing.T) {
 	tests := []struct {
 		name        string

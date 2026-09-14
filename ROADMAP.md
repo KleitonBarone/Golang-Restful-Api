@@ -2,10 +2,16 @@
 
 ## Next
 
-No capabilities are currently scheduled.
+1. Run the test suite with the race detector in CI so synchronized storage and
+   concurrent route behavior stay checked on every change.
+2. Include `GET /health` in the generated OpenAPI specification so the
+   interactive documentation matches the public routes and README.
 
 ## Completed
 
+- Album mutations return the documented 413 response whenever the complete
+  request exceeds the 64 KiB body limit, including excess trailing data after a
+  valid JSON value.
 - Request headers are capped at a documented 16 KiB service limit instead of
   relying on the larger `net/http` default.
 - HTTP response writes have a ten-second deadline so slow readers cannot hold
