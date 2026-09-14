@@ -2,13 +2,13 @@
 
 ## Next
 
-1. Run the test suite with the race detector in CI so synchronized storage and
-   concurrent route behavior stay checked on every change.
-2. Include `GET /health` in the generated OpenAPI specification so the
+1. Include `GET /health` in the generated OpenAPI specification so the
    interactive documentation matches the public routes and README.
 
 ## Completed
 
+- CI runs the test suite with the race detector so synchronized storage and
+  concurrent route behavior stay checked on every change.
 - Album mutations return the documented 413 response whenever the complete
   request exceeds the 64 KiB body limit, including excess trailing data after a
   valid JSON value.

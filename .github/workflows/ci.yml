@@ -28,8 +28,8 @@ jobs:
           go run github.com/swaggo/swag/cmd/swag@v1.16.6 init -g router.go
           git diff --exit-code -- docs
 
-      - name: Test
-        run: go test ./...
+      - name: Test with race detector
+        run: go test -race ./...
 
       - name: Vet
         run: go vet ./...
