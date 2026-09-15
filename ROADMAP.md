@@ -2,11 +2,12 @@
 
 ## Next
 
-1. Include `GET /health` in the generated OpenAPI specification so the
-   interactive documentation matches the public routes and README.
+No capabilities are scheduled.
 
 ## Completed
 
+- `GET /health` appears in the generated OpenAPI specification so the
+  interactive documentation matches the public routes and README.
 - CI runs the test suite with the race detector so synchronized storage and
   concurrent route behavior stay checked on every change.
 - Album mutations return the documented 413 response whenever the complete

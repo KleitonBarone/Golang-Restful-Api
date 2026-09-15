@@ -14,6 +14,10 @@ import (
 //go:embed docs/scalar.html
 var scalarHTML []byte
 
+type healthResponse struct {
+	Status string `json:"status"`
+}
+
 // @title Albums API
 // @version 1.0
 // @description A simple RESTful API for managing albums
@@ -31,9 +35,7 @@ func setupRouterWithStore(store albumStore) *gin.Engine {
 	router := gin.Default()
 	handler := albumHandler{store: store}
 
-	router.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"status": "ok"})
-	})
+	router.GET("/health", getHealth)
 	router.GET("/albums", handler.getAlbums)
 	router.GET("/albums/:id", handler.getAlbumByID)
 	router.POST("/albums", handler.postAlbums)
@@ -49,4 +51,15 @@ func setupRouterWithStore(store albumStore) *gin.Engine {
 	})
 
 	return router
+}
+
+// getHealth reports whether the service process is ready to handle requests.
+// @Summary Check service health
+// @Description Report whether the service process is ready to handle requests
+// @Tags health
+// @Produce json
+// @Success 200 {object} healthResponse
+// @Router /health [get]
+func getHealth(c *gin.Context) {
+	c.JSON(http.StatusOK, healthResponse{Status: "ok"})
 }

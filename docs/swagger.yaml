@@ -16,6 +16,11 @@ definitions:
       message:
         type: string
     type: object
+  main.healthResponse:
+    properties:
+      status:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -177,4 +182,17 @@ paths:
       summary: Update an album
       tags:
       - albums
+  /health:
+    get:
+      description: Report whether the service process is ready to handle requests
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.healthResponse'
+      summary: Check service health
+      tags:
+      - health
 swagger: "2.0"
