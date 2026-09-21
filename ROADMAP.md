@@ -2,7 +2,13 @@
 
 ## Next
 
-No capabilities are scheduled.
+1. Force-close remaining HTTP connections when the graceful-shutdown deadline
+   expires so the server does not leave its listener and serving goroutine
+   running after shutdown fails.
+2. Return the API's JSON error shape for unmatched routes and unsupported HTTP
+   methods so clients do not receive Gin's plain-text fallback responses.
+3. Include the canonical album URL in successful creation responses so clients
+   can locate the newly created resource without constructing the route.
 
 ## Completed
 
