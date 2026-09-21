@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -116,6 +117,64 @@ func TestRunHTTPServerDrainsInFlightRequestAfterCancellation(t *testing.T) {
 	}
 	if err := <-serverDone; err != nil {
 		t.Fatalf("run server: %v", err)
+	}
+}
+
+func TestRunHTTPServerForceClosesAfterShutdownTimeout(t *testing.T) {
+	requestStarted := make(chan struct{})
+	requestStopped := make(chan struct{})
+	server := &http.Server{
+		Handler: http.HandlerFunc(func(_ http.ResponseWriter, request *http.Request) {
+			close(requestStarted)
+			<-request.Context().Done()
+			close(requestStopped)
+		}),
+	}
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("listen: %v", err)
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	serverDone := make(chan error, 1)
+	go func() {
+		serverDone <- runHTTPServer(ctx, server, listener, 50*time.Millisecond)
+	}()
+
+	requestDone := make(chan struct{})
+	go func() {
+		response, err := http.Get("http://" + listener.Addr().String())
+		if err == nil {
+			_ = response.Body.Close()
+		}
+		close(requestDone)
+	}()
+
+	select {
+	case <-requestStarted:
+	case <-time.After(time.Second):
+		t.Fatal("request did not reach the server")
+	}
+	cancel()
+
+	select {
+	case err := <-serverDone:
+		if !errors.Is(err, context.DeadlineExceeded) {
+			t.Fatalf("expected shutdown deadline error, got %v", err)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("server did not return after the shutdown deadline")
+	}
+
+	select {
+	case <-requestStopped:
+	case <-time.After(time.Second):
+		t.Fatal("force close did not stop the in-flight request")
+	}
+	select {
+	case <-requestDone:
+	case <-time.After(time.Second):
+		t.Fatal("force close did not release the client request")
 	}
 }
 

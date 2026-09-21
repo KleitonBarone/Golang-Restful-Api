@@ -68,7 +68,18 @@ func runHTTPServer(ctx context.Context, server *http.Server, listener net.Listen
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 	if err := server.Shutdown(shutdownCtx); err != nil {
-		return fmt.Errorf("shut down HTTP server: %w", err)
+		shutdownErr := fmt.Errorf("shut down HTTP server: %w", err)
+
+		var closeErr error
+		if err := server.Close(); err != nil {
+			closeErr = fmt.Errorf("close HTTP server: %w", err)
+		}
+
+		var serveErr error
+		if err := ignoreServerClosed(<-serveDone); err != nil {
+			serveErr = fmt.Errorf("serve HTTP: %w", err)
+		}
+		return errors.Join(shutdownErr, closeErr, serveErr)
 	}
 	return ignoreServerClosed(<-serveDone)
 }

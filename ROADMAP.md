@@ -2,16 +2,16 @@
 
 ## Next
 
-1. Force-close remaining HTTP connections when the graceful-shutdown deadline
-   expires so the server does not leave its listener and serving goroutine
-   running after shutdown fails.
-2. Return the API's JSON error shape for unmatched routes and unsupported HTTP
+1. Return the API's JSON error shape for unmatched routes and unsupported HTTP
    methods so clients do not receive Gin's plain-text fallback responses.
-3. Include the canonical album URL in successful creation responses so clients
+2. Include the canonical album URL in successful creation responses so clients
    can locate the newly created resource without constructing the route.
 
 ## Completed
 
+- The server force-closes remaining HTTP connections when graceful shutdown
+  reaches its deadline, then waits for the serving goroutine to stop before
+  returning the shutdown error.
 - `GET /health` appears in the generated OpenAPI specification so the
   interactive documentation matches the public routes and README.
 - CI runs the test suite with the race detector so synchronized storage and
