@@ -2,11 +2,10 @@
 
 ## Next
 
-1. Include the canonical album URL in successful creation responses so clients
-   can locate the newly created resource without constructing the route.
-
 ## Completed
 
+- Successful album creation includes the canonical album URL in the `Location`
+  response header.
 - Unmatched routes and unsupported HTTP methods return the API's JSON error
   shape instead of Gin's plain-text fallback responses.
 - The server force-closes remaining HTTP connections when graceful shutdown

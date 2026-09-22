@@ -458,6 +458,9 @@ func TestPostAlbums(t *testing.T) {
 	if response.Code != http.StatusCreated {
 		t.Fatalf("expected status %d, got %d", http.StatusCreated, response.Code)
 	}
+	if got, want := response.Header().Get("Location"), "/albums/4"; got != want {
+		t.Fatalf("expected location %q, got %q", want, got)
+	}
 	if got := len(store.list()); got != 4 {
 		t.Fatalf("expected 4 albums after creation, got %d", got)
 	}

@@ -87,6 +87,12 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/main.album"
+                        },
+                        "headers": {
+                            "Location": {
+                                "type": "string",
+                                "description": "Canonical URL of the created album"
+                            }
                         }
                     },
                     "400": {

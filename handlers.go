@@ -6,6 +6,7 @@ import (
 	"io"
 	"mime"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -88,6 +89,7 @@ func nonNegativeQueryInt(c *gin.Context, name string) (int, bool, bool) {
 // @Produce json
 // @Param album body album true "Album to create"
 // @Success 201 {object} album
+// @Header 201 {string} Location "Canonical URL of the created album"
 // @Failure 400 {object} errorResponse
 // @Failure 409 {object} errorResponse
 // @Failure 413 {object} errorResponse
@@ -107,6 +109,7 @@ func (h albumHandler) postAlbums(c *gin.Context) {
 		c.IndentedJSON(http.StatusConflict, errorResponse{Message: "album id already exists"})
 		return
 	}
+	c.Header("Location", "/albums/"+url.PathEscape(newAlbum.ID))
 	c.IndentedJSON(http.StatusCreated, newAlbum)
 }
 
