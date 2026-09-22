@@ -33,6 +33,13 @@ func setupRouterWithStore(store albumStore) *gin.Engine {
 	gin.EnableJsonDecoderDisallowUnknownFields()
 
 	router := gin.Default()
+	router.HandleMethodNotAllowed = true
+	router.NoRoute(func(c *gin.Context) {
+		c.JSON(http.StatusNotFound, errorResponse{Message: "route not found"})
+	})
+	router.NoMethod(func(c *gin.Context) {
+		c.JSON(http.StatusMethodNotAllowed, errorResponse{Message: "method not allowed"})
+	})
 	handler := albumHandler{store: store}
 
 	router.GET("/health", getHealth)

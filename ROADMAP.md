@@ -2,13 +2,13 @@
 
 ## Next
 
-1. Return the API's JSON error shape for unmatched routes and unsupported HTTP
-   methods so clients do not receive Gin's plain-text fallback responses.
-2. Include the canonical album URL in successful creation responses so clients
+1. Include the canonical album URL in successful creation responses so clients
    can locate the newly created resource without constructing the route.
 
 ## Completed
 
+- Unmatched routes and unsupported HTTP methods return the API's JSON error
+  shape instead of Gin's plain-text fallback responses.
 - The server force-closes remaining HTTP connections when graceful shutdown
   reaches its deadline, then waits for the serving goroutine to stop before
   returning the shutdown error.

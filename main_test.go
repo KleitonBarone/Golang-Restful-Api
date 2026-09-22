@@ -264,6 +264,54 @@ func TestHealth(t *testing.T) {
 	}
 }
 
+func TestRouterReturnsJSONForRoutingErrors(t *testing.T) {
+	tests := []struct {
+		name        string
+		method      string
+		path        string
+		wantStatus  int
+		wantMessage string
+	}{
+		{
+			name:        "unmatched route",
+			method:      http.MethodGet,
+			path:        "/missing",
+			wantStatus:  http.StatusNotFound,
+			wantMessage: "route not found",
+		},
+		{
+			name:        "unsupported method",
+			method:      http.MethodPatch,
+			path:        "/albums/1",
+			wantStatus:  http.StatusMethodNotAllowed,
+			wantMessage: "method not allowed",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			response := httptest.NewRecorder()
+			request := httptest.NewRequest(tt.method, tt.path, nil)
+
+			testRouter(t).ServeHTTP(response, request)
+
+			if response.Code != tt.wantStatus {
+				t.Fatalf("expected status %d, got %d", tt.wantStatus, response.Code)
+			}
+			if got := response.Header().Get("Content-Type"); got != "application/json; charset=utf-8" {
+				t.Fatalf("expected JSON content type, got %q", got)
+			}
+			var got errorResponse
+			if err := json.Unmarshal(response.Body.Bytes(), &got); err != nil {
+				t.Fatalf("decode response: %v", err)
+			}
+			if got.Message != tt.wantMessage {
+				t.Fatalf("expected message %q, got %q", tt.wantMessage, got.Message)
+			}
+		})
+	}
+}
+
 func TestGetAlbums(t *testing.T) {
 	router := testRouter(t)
 	response := httptest.NewRecorder()
