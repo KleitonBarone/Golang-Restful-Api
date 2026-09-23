@@ -2,8 +2,6 @@
 
 ## Next
 
-- Make album IDs containing escaped path separators round-trip through the
-  canonical URLs returned by mutation endpoints.
 - Return pagination metadata with partial `GET /albums` responses so clients
   can determine whether another page exists without guessing from page size.
 - Support partial album updates without requiring clients to resend unchanged
@@ -11,6 +9,8 @@
 
 ## Completed
 
+- Album IDs containing escaped path separators round-trip through the
+  canonical URLs returned by mutation endpoints.
 - Successful album creation includes the canonical album URL in the `Location`
   response header.
 - Unmatched routes and unsupported HTTP methods return the API's JSON error

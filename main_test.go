@@ -466,6 +466,43 @@ func TestPostAlbums(t *testing.T) {
 	}
 }
 
+func TestPostAlbumsLocationSupportsEscapedPathSeparator(t *testing.T) {
+	store := newAlbumStore(seedAlbums())
+	router := setupRouterWithStore(store)
+	createResponse := httptest.NewRecorder()
+	createRequest := httptest.NewRequest(
+		http.MethodPost,
+		"/albums",
+		bytes.NewBufferString(`{"id":"catalog/4","title":"Kind of Blue","artist":"Miles Davis","price":29.99}`),
+	)
+	createRequest.Header.Set("Content-Type", "application/json")
+
+	router.ServeHTTP(createResponse, createRequest)
+
+	if createResponse.Code != http.StatusCreated {
+		t.Fatalf("expected create status %d, got %d", http.StatusCreated, createResponse.Code)
+	}
+	location := createResponse.Header().Get("Location")
+	if want := "/albums/catalog%2F4"; location != want {
+		t.Fatalf("expected location %q, got %q", want, location)
+	}
+
+	getResponse := httptest.NewRecorder()
+	getRequest := httptest.NewRequest(http.MethodGet, location, nil)
+	router.ServeHTTP(getResponse, getRequest)
+
+	if getResponse.Code != http.StatusOK {
+		t.Fatalf("expected canonical location status %d, got %d", http.StatusOK, getResponse.Code)
+	}
+	var got album
+	if err := json.Unmarshal(getResponse.Body.Bytes(), &got); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if got.ID != "catalog/4" {
+		t.Fatalf("expected album id %q, got %q", "catalog/4", got.ID)
+	}
+}
+
 func TestAlbumMutationsRejectNonJSONContentType(t *testing.T) {
 	tests := []struct {
 		name   string

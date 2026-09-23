@@ -33,6 +33,7 @@ func setupRouterWithStore(store albumStore) *gin.Engine {
 	gin.EnableJsonDecoderDisallowUnknownFields()
 
 	router := gin.Default()
+	router.UseRawPath = true
 	router.HandleMethodNotAllowed = true
 	router.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, errorResponse{Message: "route not found"})
