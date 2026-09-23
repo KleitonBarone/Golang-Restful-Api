@@ -26,6 +26,7 @@ type albumHandler struct {
 // @Param limit query int false "Maximum number of albums to return" minimum(1)
 // @Param offset query int false "Number of albums to skip" minimum(0)
 // @Success 200 {array} album
+// @Header 200 {integer} X-Total-Count "Total number of albums when pagination is requested"
 // @Failure 400 {object} errorResponse
 // @Router /albums [get]
 func (h albumHandler) getAlbums(c *gin.Context) {
@@ -43,6 +44,7 @@ func (h albumHandler) getAlbums(c *gin.Context) {
 		c.IndentedJSON(http.StatusOK, albums)
 		return
 	}
+	c.Header("X-Total-Count", strconv.Itoa(len(albums)))
 	if offset >= len(albums) {
 		c.IndentedJSON(http.StatusOK, albums[len(albums):])
 		return

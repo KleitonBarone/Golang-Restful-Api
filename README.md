@@ -26,6 +26,9 @@ different address, such as `:9090`.
 Use `GET /health` for local and automated readiness checks. A healthy process
 returns `200 OK` with `{"status":"ok"}`.
 
+`GET /albums` accepts `limit` and `offset` query parameters. Paginated
+responses include `X-Total-Count` with the collection size.
+
 On an interrupt or termination signal, the server stops accepting new
 connections and gives in-flight requests up to five seconds to finish.
 The server allows at most ten seconds to read each complete request and ten

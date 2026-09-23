@@ -322,6 +322,9 @@ func TestGetAlbums(t *testing.T) {
 	if response.Code != http.StatusOK {
 		t.Fatalf("expected status %d, got %d", http.StatusOK, response.Code)
 	}
+	if got := response.Header().Get("X-Total-Count"); got != "" {
+		t.Fatalf("expected no pagination metadata, got total count %q", got)
+	}
 
 	var got []album
 	if err := json.Unmarshal(response.Body.Bytes(), &got); err != nil {
@@ -356,6 +359,9 @@ func TestGetAlbumsPagination(t *testing.T) {
 
 			if response.Code != http.StatusOK {
 				t.Fatalf("expected status %d, got %d", http.StatusOK, response.Code)
+			}
+			if got, want := response.Header().Get("X-Total-Count"), fmt.Sprint(len(seedAlbums())); got != want {
+				t.Fatalf("expected total count %q, got %q", want, got)
 			}
 			var got []album
 			if err := json.Unmarshal(response.Body.Bytes(), &got); err != nil {

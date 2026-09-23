@@ -47,6 +47,10 @@ paths:
       responses:
         "200":
           description: OK
+          headers:
+            X-Total-Count:
+              description: Total number of albums when pagination is requested
+              type: integer
           schema:
             items:
               $ref: '#/definitions/main.album'

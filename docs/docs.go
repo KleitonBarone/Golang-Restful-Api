@@ -49,6 +49,12 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/main.album"
                             }
+                        },
+                        "headers": {
+                            "X-Total-Count": {
+                                "type": "integer",
+                                "description": "Total number of albums when pagination is requested"
+                            }
                         }
                     },
                     "400": {
