@@ -2,11 +2,12 @@
 
 ## Next
 
-- Support partial album updates without requiring clients to resend unchanged
-  fields.
+- No capabilities are currently scheduled.
 
 ## Completed
 
+- Partial album updates let clients change selected mutable fields without
+  resending the complete album.
 - Paginated `GET /albums` responses include the collection's total count so
   clients can determine whether another page exists.
 - Album IDs containing escaped path separators round-trip through the

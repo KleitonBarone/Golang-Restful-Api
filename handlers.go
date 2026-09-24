@@ -98,7 +98,7 @@ func nonNegativeQueryInt(c *gin.Context, name string) (int, bool, bool) {
 // @Failure 415 {object} errorResponse
 // @Router /albums [post]
 func (h albumHandler) postAlbums(c *gin.Context) {
-	newAlbum, ok := decodeAlbumRequest(c)
+	newAlbum, ok := decodeJSONRequest[album](c)
 	if !ok {
 		return
 	}
@@ -150,7 +150,7 @@ func (h albumHandler) getAlbumByID(c *gin.Context) {
 // @Failure 415 {object} errorResponse
 // @Router /albums/{id} [put]
 func (h albumHandler) putAlbumByID(c *gin.Context) {
-	updatedAlbum, ok := decodeAlbumRequest(c)
+	updatedAlbum, ok := decodeJSONRequest[album](c)
 	if !ok {
 		return
 	}
@@ -172,41 +172,75 @@ func (h albumHandler) putAlbumByID(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, updatedAlbum)
 }
 
-// decodeAlbumRequest validates the media type and applies the shared body limit before decoding JSON.
-func decodeAlbumRequest(c *gin.Context) (album, bool) {
+// patchAlbumByID updates only the supplied mutable fields of an existing album.
+// @Summary Partially update an album
+// @Description Update selected fields of an existing album while retaining its ID
+// @Tags albums
+// @Accept json
+// @Produce json
+// @Param id path string true "Album ID"
+// @Param album body albumPatch true "Album fields to update"
+// @Success 200 {object} album
+// @Failure 400 {object} errorResponse
+// @Failure 404 {object} errorResponse
+// @Failure 413 {object} errorResponse
+// @Failure 415 {object} errorResponse
+// @Router /albums/{id} [patch]
+func (h albumHandler) patchAlbumByID(c *gin.Context) {
+	changes, ok := decodeJSONRequest[albumPatch](c)
+	if !ok {
+		return
+	}
+	if validationError := validateAlbumPatch(changes); validationError != "" {
+		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: validationError})
+		return
+	}
+
+	updatedAlbum, ok := h.store.patch(c.Param("id"), changes)
+	if !ok {
+		c.IndentedJSON(http.StatusNotFound, errorResponse{Message: "album not found"})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, updatedAlbum)
+}
+
+// decodeJSONRequest validates the media type and applies the shared body limit before decoding JSON.
+func decodeJSONRequest[T any](c *gin.Context) (T, bool) {
+	var empty T
 	mediaType, _, err := mime.ParseMediaType(c.GetHeader("Content-Type"))
 	if err != nil || mediaType != "application/json" {
 		c.IndentedJSON(http.StatusUnsupportedMediaType, errorResponse{Message: "content type must be application/json"})
-		return album{}, false
+		return empty, false
 	}
 
 	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxAlbumRequestBodyBytes)
 
-	var requestedAlbum album
+	var request T
 	decoder := json.NewDecoder(c.Request.Body)
 	decoder.DisallowUnknownFields()
-	if err := decoder.Decode(&requestedAlbum); err != nil {
+	if err := decoder.Decode(&request); err != nil {
 		var maxBytesError *http.MaxBytesError
 		if errors.As(err, &maxBytesError) {
 			c.IndentedJSON(http.StatusRequestEntityTooLarge, errorResponse{Message: "request body too large"})
-			return album{}, false
+			return empty, false
 		}
 
 		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: "invalid request body"})
-		return album{}, false
+		return empty, false
 	}
 	if err := decoder.Decode(&struct{}{}); !errors.Is(err, io.EOF) {
 		var maxBytesError *http.MaxBytesError
 		if errors.As(err, &maxBytesError) {
 			c.IndentedJSON(http.StatusRequestEntityTooLarge, errorResponse{Message: "request body too large"})
-			return album{}, false
+			return empty, false
 		}
 
 		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: "invalid request body"})
-		return album{}, false
+		return empty, false
 	}
 
-	return requestedAlbum, true
+	return request, true
 }
 
 // deleteAlbumByID removes the album whose ID matches the path parameter.

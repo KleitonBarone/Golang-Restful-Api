@@ -11,6 +11,15 @@ definitions:
       title:
         type: string
     type: object
+  main.albumPatch:
+    properties:
+      artist:
+        type: string
+      price:
+        type: number
+      title:
+        type: string
+    type: object
   main.errorResponse:
     properties:
       message:
@@ -146,6 +155,49 @@ paths:
               type: string
             type: object
       summary: Get an album by ID
+      tags:
+      - albums
+    patch:
+      consumes:
+      - application/json
+      description: Update selected fields of an existing album while retaining its
+        ID
+      parameters:
+      - description: Album ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Album fields to update
+        in: body
+        name: album
+        required: true
+        schema:
+          $ref: '#/definitions/main.albumPatch'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.album'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/main.errorResponse'
+        "413":
+          description: Request Entity Too Large
+          schema:
+            $ref: '#/definitions/main.errorResponse'
+        "415":
+          description: Unsupported Media Type
+          schema:
+            $ref: '#/definitions/main.errorResponse'
+      summary: Partially update an album
       tags:
       - albums
     put:

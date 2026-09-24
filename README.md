@@ -29,6 +29,9 @@ returns `200 OK` with `{"status":"ok"}`.
 `GET /albums` accepts `limit` and `offset` query parameters. Paginated
 responses include `X-Total-Count` with the collection size.
 
+`PATCH /albums/{id}` updates any supplied `title`, `artist`, or `price` field
+without requiring the complete album. Album IDs remain immutable.
+
 On an interrupt or termination signal, the server stops accepting new
 connections and gives in-flight requests up to five seconds to finish.
 The server allows at most ten seconds to read each complete request and ten

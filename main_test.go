@@ -215,6 +215,17 @@ func (s *stubAlbumStore) update(id string, updatedAlbum album) (album, bool) {
 	return album{}, false
 }
 
+func (s *stubAlbumStore) patch(id string, changes albumPatch) (album, bool) {
+	for index, candidate := range s.albums {
+		if candidate.ID == id {
+			updatedAlbum := changes.apply(candidate)
+			s.albums[index] = updatedAlbum
+			return updatedAlbum, true
+		}
+	}
+	return album{}, false
+}
+
 func (s *stubAlbumStore) delete(id string) bool {
 	for index, candidate := range s.albums {
 		if candidate.ID == id {
@@ -281,7 +292,7 @@ func TestRouterReturnsJSONForRoutingErrors(t *testing.T) {
 		},
 		{
 			name:        "unsupported method",
-			method:      http.MethodPatch,
+			method:      http.MethodConnect,
 			path:        "/albums/1",
 			wantStatus:  http.StatusMethodNotAllowed,
 			wantMessage: "method not allowed",
@@ -527,6 +538,12 @@ func TestAlbumMutationsRejectNonJSONContentType(t *testing.T) {
 			method: http.MethodPut,
 			path:   "/albums/2",
 			body:   `{"id":"2","title":"Night Lights","artist":"Gerry Mulligan","price":24.99}`,
+		},
+		{
+			name:   "partial update",
+			method: http.MethodPatch,
+			path:   "/albums/2",
+			body:   `{"title":"Night Lights"}`,
 		},
 	}
 
@@ -787,6 +804,80 @@ func TestPutAlbumByID(t *testing.T) {
 	got, ok := store.get("2")
 	if !ok || got != want {
 		t.Fatalf("expected stored album %#v, got %#v (found: %t)", want, got, ok)
+	}
+}
+
+func TestPatchAlbumByIDPreservesUnchangedFields(t *testing.T) {
+	store := newAlbumStore(seedAlbums())
+	router := setupRouterWithStore(store)
+	response := httptest.NewRecorder()
+	request := httptest.NewRequest(
+		http.MethodPatch,
+		"/albums/2",
+		bytes.NewBufferString(`{"title":"Night Lights","price":24.99}`),
+	)
+	request.Header.Set("Content-Type", "application/json")
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, response.Code)
+	}
+	want := album{ID: "2", Title: "Night Lights", Artist: "Gerry Mulligan", Price: 24.99}
+	got, ok := store.get("2")
+	if !ok || got != want {
+		t.Fatalf("expected stored album %#v, got %#v (found: %t)", want, got, ok)
+	}
+
+	var responseAlbum album
+	if err := json.Unmarshal(response.Body.Bytes(), &responseAlbum); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if responseAlbum != want {
+		t.Fatalf("expected response album %#v, got %#v", want, responseAlbum)
+	}
+}
+
+func TestPatchAlbumByIDRejectsInvalidRequests(t *testing.T) {
+	tests := []struct {
+		name        string
+		path        string
+		body        string
+		wantStatus  int
+		wantMessage string
+	}{
+		{name: "malformed body", path: "/albums/2", body: `{"title":`, wantStatus: http.StatusBadRequest, wantMessage: "invalid request body"},
+		{name: "unknown field", path: "/albums/2", body: `{"genre":"jazz"}`, wantStatus: http.StatusBadRequest, wantMessage: "invalid request body"},
+		{name: "immutable id", path: "/albums/2", body: `{"id":"3"}`, wantStatus: http.StatusBadRequest, wantMessage: "invalid request body"},
+		{name: "blank title", path: "/albums/2", body: `{"title":" "}`, wantStatus: http.StatusBadRequest, wantMessage: "title is required"},
+		{name: "zero price", path: "/albums/2", body: `{"price":0}`, wantStatus: http.StatusBadRequest, wantMessage: "price must be greater than zero"},
+		{name: "missing album", path: "/albums/missing", body: `{"title":"Night Lights"}`, wantStatus: http.StatusNotFound, wantMessage: "album not found"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			store := newAlbumStore(seedAlbums())
+			before := store.list()
+			response := httptest.NewRecorder()
+			request := httptest.NewRequest(http.MethodPatch, tt.path, bytes.NewBufferString(tt.body))
+			request.Header.Set("Content-Type", "application/json")
+
+			setupRouterWithStore(store).ServeHTTP(response, request)
+
+			if response.Code != tt.wantStatus {
+				t.Fatalf("expected status %d, got %d", tt.wantStatus, response.Code)
+			}
+			var got errorResponse
+			if err := json.Unmarshal(response.Body.Bytes(), &got); err != nil {
+				t.Fatalf("decode response: %v", err)
+			}
+			if got.Message != tt.wantMessage {
+				t.Fatalf("expected message %q, got %q", tt.wantMessage, got.Message)
+			}
+			if after := store.list(); fmt.Sprint(after) != fmt.Sprint(before) {
+				t.Fatalf("failed patch changed albums from %#v to %#v", before, after)
+			}
+		})
 	}
 }
 

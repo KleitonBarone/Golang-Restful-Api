@@ -7,6 +7,7 @@ type albumStore interface {
 	get(id string) (album, bool)
 	create(album) bool
 	update(id string, album album) (album, bool)
+	patch(id string, changes albumPatch) (album, bool)
 	delete(id string) bool
 }
 
@@ -55,6 +56,19 @@ func (s *inMemoryAlbumStore) update(id string, updatedAlbum album) (album, bool)
 	defer s.mu.Unlock()
 	for index, candidate := range s.albums {
 		if candidate.ID == id {
+			s.albums[index] = updatedAlbum
+			return updatedAlbum, true
+		}
+	}
+	return album{}, false
+}
+
+func (s *inMemoryAlbumStore) patch(id string, changes albumPatch) (album, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for index, candidate := range s.albums {
+		if candidate.ID == id {
+			updatedAlbum := changes.apply(candidate)
 			s.albums[index] = updatedAlbum
 			return updatedAlbum, true
 		}
