@@ -1,6 +1,12 @@
 package main
 
-import "strings"
+import (
+	"bytes"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"strings"
+)
 
 // album represents data about a record album.
 type album struct {
@@ -15,6 +21,32 @@ type albumPatch struct {
 	Title  *string  `json:"title,omitempty"`
 	Artist *string  `json:"artist,omitempty"`
 	Price  *float64 `json:"price,omitempty"`
+}
+
+// UnmarshalJSON rejects null fields, which would otherwise decode like omitted fields.
+func (p *albumPatch) UnmarshalJSON(data []byte) error {
+	if bytes.Equal(bytes.TrimSpace(data), []byte("null")) {
+		return errors.New("patch cannot be null")
+	}
+
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(data, &fields); err != nil {
+		return err
+	}
+	for name, value := range fields {
+		if bytes.Equal(bytes.TrimSpace(value), []byte("null")) {
+			switch strings.ToLower(name) {
+			case "title", "artist", "price":
+				return fmt.Errorf("%s cannot be null", name)
+			}
+		}
+	}
+
+	// A custom unmarshaler bypasses the outer decoder's unknown-field check.
+	type patchFields albumPatch
+	decoder := json.NewDecoder(bytes.NewReader(data))
+	decoder.DisallowUnknownFields()
+	return decoder.Decode((*patchFields)(p))
 }
 
 type errorResponse struct {

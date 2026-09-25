@@ -30,7 +30,9 @@ returns `200 OK` with `{"status":"ok"}`.
 responses include `X-Total-Count` with the collection size.
 
 `PATCH /albums/{id}` updates any supplied `title`, `artist`, or `price` field
-without requiring the complete album. Album IDs remain immutable.
+without requiring the complete album. Album IDs remain immutable. Explicit
+`null` values for mutable fields return `400 Bad Request` instead of being
+treated as omitted fields.
 
 On an interrupt or termination signal, the server stops accepting new
 connections and gives in-flight requests up to five seconds to finish.

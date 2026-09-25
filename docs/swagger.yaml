@@ -161,7 +161,7 @@ paths:
       consumes:
       - application/json
       description: Update selected fields of an existing album while retaining its
-        ID
+        ID. Explicit null fields are rejected.
       parameters:
       - description: Album ID
         in: path

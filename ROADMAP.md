@@ -2,13 +2,13 @@
 
 ## Next
 
-- Reject explicit `null` values in partial album updates so clients cannot
-  mistake an ignored field for a successful change.
 - Reject repeated `limit` or `offset` query parameters so pagination requests
   have one unambiguous value per field.
 
 ## Completed
 
+- Partial album updates reject explicit `null` values instead of silently
+  treating them as omitted fields.
 - Partial album updates let clients change selected mutable fields without
   resending the complete album.
 - Paginated `GET /albums` responses include the collection's total count so

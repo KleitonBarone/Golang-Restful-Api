@@ -259,7 +259,7 @@ const docTemplate = `{
                 }
             },
             "patch": {
-                "description": "Update selected fields of an existing album while retaining its ID",
+                "description": "Update selected fields of an existing album while retaining its ID. Explicit null fields are rejected.",
                 "consumes": [
                     "application/json"
                 ],

@@ -174,7 +174,7 @@ func (h albumHandler) putAlbumByID(c *gin.Context) {
 
 // patchAlbumByID updates only the supplied mutable fields of an existing album.
 // @Summary Partially update an album
-// @Description Update selected fields of an existing album while retaining its ID
+// @Description Update selected fields of an existing album while retaining its ID. Explicit null fields are rejected.
 // @Tags albums
 // @Accept json
 // @Produce json
