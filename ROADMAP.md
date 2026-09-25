@@ -2,7 +2,10 @@
 
 ## Next
 
-- No capabilities are currently scheduled.
+- Reject explicit `null` values in partial album updates so clients cannot
+  mistake an ignored field for a successful change.
+- Reject repeated `limit` or `offset` query parameters so pagination requests
+  have one unambiguous value per field.
 
 ## Completed
 
