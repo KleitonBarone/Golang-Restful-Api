@@ -2,11 +2,12 @@
 
 ## Next
 
-- Reject repeated `limit` or `offset` query parameters so pagination requests
-  have one unambiguous value per field.
+- No capabilities are currently scheduled.
 
 ## Completed
 
+- Paginated album requests reject repeated `limit` or `offset` parameters
+  instead of silently using the first value.
 - Partial album updates reject explicit `null` values instead of silently
   treating them as omitted fields.
 - Partial album updates let clients change selected mutable fields without

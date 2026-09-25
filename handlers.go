@@ -20,7 +20,7 @@ type albumHandler struct {
 
 // getAlbums responds with the list of all albums as JSON.
 // @Summary List all albums
-// @Description Get all albums in the collection
+// @Description Get all albums in the collection. Limit and offset can each be specified once.
 // @Tags albums
 // @Produce json
 // @Param limit query int false "Maximum number of albums to return" minimum(1)
@@ -58,9 +58,9 @@ func (h albumHandler) getAlbums(c *gin.Context) {
 }
 
 func positiveQueryInt(c *gin.Context, name string) (int, bool, bool) {
-	raw, exists := c.GetQuery(name)
-	if !exists {
-		return 0, false, true
+	raw, exists, ok := singleQueryValue(c, name)
+	if !ok || !exists {
+		return 0, exists, ok
 	}
 	value, err := strconv.Atoi(raw)
 	if err != nil || value <= 0 {
@@ -71,9 +71,9 @@ func positiveQueryInt(c *gin.Context, name string) (int, bool, bool) {
 }
 
 func nonNegativeQueryInt(c *gin.Context, name string) (int, bool, bool) {
-	raw, exists := c.GetQuery(name)
-	if !exists {
-		return 0, false, true
+	raw, exists, ok := singleQueryValue(c, name)
+	if !ok || !exists {
+		return 0, exists, ok
 	}
 	value, err := strconv.Atoi(raw)
 	if err != nil || value < 0 {
@@ -81,6 +81,18 @@ func nonNegativeQueryInt(c *gin.Context, name string) (int, bool, bool) {
 		return 0, true, false
 	}
 	return value, true, true
+}
+
+func singleQueryValue(c *gin.Context, name string) (string, bool, bool) {
+	values, exists := c.Request.URL.Query()[name]
+	if !exists {
+		return "", false, true
+	}
+	if len(values) != 1 {
+		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: name + " must be specified once"})
+		return "", true, false
+	}
+	return values[0], true, true
 }
 
 // postAlbums adds an album from JSON received in the request body.

@@ -17,7 +17,7 @@ const docTemplate = `{
     "paths": {
         "/albums": {
             "get": {
-                "description": "Get all albums in the collection",
+                "description": "Get all albums in the collection. Limit and offset can each be specified once.",
                 "produces": [
                     "application/json"
                 ],

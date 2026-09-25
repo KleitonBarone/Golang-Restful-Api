@@ -395,9 +395,11 @@ func TestGetAlbumsRejectsInvalidPagination(t *testing.T) {
 		{name: "zero limit", path: "/albums?limit=0", wantMessage: "limit must be a positive integer"},
 		{name: "negative limit", path: "/albums?limit=-1", wantMessage: "limit must be a positive integer"},
 		{name: "non-integer limit", path: "/albums?limit=one", wantMessage: "limit must be a positive integer"},
+		{name: "repeated limit", path: "/albums?limit=1&limit=2", wantMessage: "limit must be specified once"},
 		{name: "empty offset", path: "/albums?offset=", wantMessage: "offset must be a non-negative integer"},
 		{name: "negative offset", path: "/albums?offset=-1", wantMessage: "offset must be a non-negative integer"},
 		{name: "non-integer offset", path: "/albums?offset=one", wantMessage: "offset must be a non-negative integer"},
+		{name: "repeated offset", path: "/albums?offset=0&offset=1", wantMessage: "offset must be specified once"},
 	}
 
 	for _, tt := range tests {

@@ -27,7 +27,8 @@ Use `GET /health` for local and automated readiness checks. A healthy process
 returns `200 OK` with `{"status":"ok"}`.
 
 `GET /albums` accepts `limit` and `offset` query parameters. Paginated
-responses include `X-Total-Count` with the collection size.
+responses include `X-Total-Count` with the collection size. Each pagination
+parameter can appear only once; repeated values return `400 Bad Request`.
 
 `PATCH /albums/{id}` updates any supplied `title`, `artist`, or `price` field
 without requiring the complete album. Album IDs remain immutable. Explicit
