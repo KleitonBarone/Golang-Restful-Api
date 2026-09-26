@@ -856,6 +856,7 @@ func TestPatchAlbumByIDRejectsInvalidRequests(t *testing.T) {
 		{name: "null price", path: "/albums/2", body: `{"price":null}`, wantStatus: http.StatusBadRequest, wantMessage: "invalid request body"},
 		{name: "case insensitive null field", path: "/albums/2", body: `{"Title":null}`, wantStatus: http.StatusBadRequest, wantMessage: "invalid request body"},
 		{name: "null patch", path: "/albums/2", body: `null`, wantStatus: http.StatusBadRequest, wantMessage: "invalid request body"},
+		{name: "empty patch", path: "/albums/2", body: `{}`, wantStatus: http.StatusBadRequest, wantMessage: "at least one album field is required"},
 		{name: "blank title", path: "/albums/2", body: `{"title":" "}`, wantStatus: http.StatusBadRequest, wantMessage: "title is required"},
 		{name: "zero price", path: "/albums/2", body: `{"price":0}`, wantStatus: http.StatusBadRequest, wantMessage: "price must be greater than zero"},
 		{name: "missing album", path: "/albums/missing", body: `{"title":"Night Lights"}`, wantStatus: http.StatusNotFound, wantMessage: "album not found"},

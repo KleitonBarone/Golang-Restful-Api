@@ -33,7 +33,7 @@ parameter can appear only once; repeated values return `400 Bad Request`.
 `PATCH /albums/{id}` updates any supplied `title`, `artist`, or `price` field
 without requiring the complete album. Album IDs remain immutable. Explicit
 `null` values for mutable fields return `400 Bad Request` instead of being
-treated as omitted fields.
+treated as omitted fields. Empty patch objects also return `400 Bad Request`.
 
 On an interrupt or termination signal, the server stops accepting new
 connections and gives in-flight requests up to five seconds to finish.

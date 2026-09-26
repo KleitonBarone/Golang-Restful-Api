@@ -70,6 +70,8 @@ func validateAlbum(candidate album) string {
 
 func validateAlbumPatch(candidate albumPatch) string {
 	switch {
+	case candidate.Title == nil && candidate.Artist == nil && candidate.Price == nil:
+		return "at least one album field is required"
 	case candidate.Title != nil && strings.TrimSpace(*candidate.Title) == "":
 		return "title is required"
 	case candidate.Artist != nil && strings.TrimSpace(*candidate.Artist) == "":
