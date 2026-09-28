@@ -2,11 +2,12 @@
 
 ## Next
 
-- Reject duplicate JSON field names in album mutation requests so a single
-  payload cannot assign conflicting values to the same field.
+No capabilities are currently scheduled.
 
 ## Completed
 
+- Album mutation requests reject duplicate JSON field names so a single
+  payload cannot assign conflicting values to the same field.
 - Empty partial album updates return a client error instead of reporting a
   successful update with no changes.
 - Paginated album requests reject repeated `limit` or `offset` parameters

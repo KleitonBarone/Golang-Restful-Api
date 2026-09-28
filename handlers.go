@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"io"
@@ -8,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -227,32 +229,66 @@ func decodeJSONRequest[T any](c *gin.Context) (T, bool) {
 	}
 
 	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxAlbumRequestBodyBytes)
-
-	var request T
-	decoder := json.NewDecoder(c.Request.Body)
-	decoder.DisallowUnknownFields()
-	if err := decoder.Decode(&request); err != nil {
+	body, err := io.ReadAll(c.Request.Body)
+	if err != nil {
 		var maxBytesError *http.MaxBytesError
 		if errors.As(err, &maxBytesError) {
 			c.IndentedJSON(http.StatusRequestEntityTooLarge, errorResponse{Message: "request body too large"})
 			return empty, false
 		}
+		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: "invalid request body"})
+		return empty, false
+	}
+	if err := rejectDuplicateFields(body); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: "invalid request body"})
+		return empty, false
+	}
 
+	var request T
+	decoder := json.NewDecoder(bytes.NewReader(body))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&request); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: "invalid request body"})
 		return empty, false
 	}
 	if err := decoder.Decode(&struct{}{}); !errors.Is(err, io.EOF) {
-		var maxBytesError *http.MaxBytesError
-		if errors.As(err, &maxBytesError) {
-			c.IndentedJSON(http.StatusRequestEntityTooLarge, errorResponse{Message: "request body too large"})
-			return empty, false
-		}
-
 		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: "invalid request body"})
 		return empty, false
 	}
 
 	return request, true
+}
+
+// rejectDuplicateFields checks the top-level album fields before JSON decoding
+// can discard repeated names. Field matching follows encoding/json's case folding.
+func rejectDuplicateFields(body []byte) error {
+	decoder := json.NewDecoder(bytes.NewReader(body))
+	start, err := decoder.Token()
+	if err != nil {
+		return err
+	}
+	if start != json.Delim('{') {
+		return nil // The typed decoder reports other invalid request shapes.
+	}
+
+	seen := make(map[string]struct{})
+	for decoder.More() {
+		token, err := decoder.Token()
+		if err != nil {
+			return err
+		}
+		name := strings.ToLower(token.(string))
+		if _, exists := seen[name]; exists {
+			return errors.New("duplicate field")
+		}
+		seen[name] = struct{}{}
+		var value json.RawMessage
+		if err := decoder.Decode(&value); err != nil {
+			return err
+		}
+	}
+	_, err = decoder.Token()
+	return err
 }
 
 // deleteAlbumByID removes the album whose ID matches the path parameter.

@@ -684,6 +684,45 @@ func TestPostAlbumsRejectsMalformedJSON(t *testing.T) {
 	}
 }
 
+func TestAlbumMutationsRejectDuplicateFields(t *testing.T) {
+	tests := []struct {
+		name   string
+		method string
+		path   string
+		body   string
+	}{
+		{name: "create", method: http.MethodPost, path: "/albums", body: `{"id":"4","title":"First","title":"Second","artist":"Miles Davis","price":29.99}`},
+		{name: "replace case variant", method: http.MethodPut, path: "/albums/2", body: `{"id":"2","title":"First","Title":"Second","artist":"Gerry Mulligan","price":24.99}`},
+		{name: "patch escaped name", method: http.MethodPatch, path: "/albums/2", body: `{"title":"First","\u0074itle":"Second"}`},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			store := newAlbumStore(seedAlbums())
+			before := store.list()
+			request := httptest.NewRequest(tt.method, tt.path, bytes.NewBufferString(tt.body))
+			request.Header.Set("Content-Type", "application/json")
+			response := httptest.NewRecorder()
+
+			setupRouterWithStore(store).ServeHTTP(response, request)
+
+			if response.Code != http.StatusBadRequest {
+				t.Fatalf("expected status %d, got %d", http.StatusBadRequest, response.Code)
+			}
+			var got errorResponse
+			if err := json.Unmarshal(response.Body.Bytes(), &got); err != nil {
+				t.Fatalf("decode response: %v", err)
+			}
+			if got.Message != "invalid request body" {
+				t.Fatalf("expected invalid-body message, got %q", got.Message)
+			}
+			if after := store.list(); fmt.Sprint(after) != fmt.Sprint(before) {
+				t.Fatalf("duplicate fields changed albums from %#v to %#v", before, after)
+			}
+		})
+	}
+}
+
 func TestPostAlbumsRejectsOversizedBody(t *testing.T) {
 	store := newAlbumStore(seedAlbums())
 	before := store.list()

@@ -34,6 +34,8 @@ parameter can appear only once; repeated values return `400 Bad Request`.
 without requiring the complete album. Album IDs remain immutable. Explicit
 `null` values for mutable fields return `400 Bad Request` instead of being
 treated as omitted fields. Empty patch objects also return `400 Bad Request`.
+Album creation, replacement, and partial updates reject repeated JSON field
+names, including names that differ only by case, with `400 Bad Request`.
 
 On an interrupt or termination signal, the server stops accepting new
 connections and gives in-flight requests up to five seconds to finish.
