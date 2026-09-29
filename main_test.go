@@ -16,12 +16,25 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 func testRouter(t *testing.T) *gin.Engine {
 	t.Helper()
 	gin.SetMode(gin.TestMode)
 	return setupRouterWithStore(newAlbumStore(seedAlbums()))
+}
+
+func TestRouterDoesNotChangeGinJSONDecoderSetting(t *testing.T) {
+	previous := binding.EnableDecoderDisallowUnknownFields
+	t.Cleanup(func() { binding.EnableDecoderDisallowUnknownFields = previous })
+	binding.EnableDecoderDisallowUnknownFields = false
+
+	setupRouterWithStore(newAlbumStore(seedAlbums()))
+
+	if binding.EnableDecoderDisallowUnknownFields {
+		t.Fatal("router setup changed Gin's process-wide JSON decoder setting")
+	}
 }
 
 func TestListenAddress(t *testing.T) {

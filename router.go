@@ -30,8 +30,6 @@ func setupRouter() *gin.Engine {
 }
 
 func setupRouterWithStore(store albumStore) *gin.Engine {
-	gin.EnableJsonDecoderDisallowUnknownFields()
-
 	router := gin.Default()
 	router.UseRawPath = true
 	router.HandleMethodNotAllowed = true
