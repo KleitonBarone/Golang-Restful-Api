@@ -684,6 +684,33 @@ func TestPostAlbumsRejectsMalformedJSON(t *testing.T) {
 	}
 }
 
+func TestPostAlbumsRejectsInvalidUTF8(t *testing.T) {
+	store := newAlbumStore(seedAlbums())
+	before := store.list()
+	body := []byte(`{"id":"4","title":"`)
+	body = append(body, 0xff)
+	body = append(body, []byte(`","artist":"Miles Davis","price":29.99}`)...)
+	request := httptest.NewRequest(http.MethodPost, "/albums", bytes.NewReader(body))
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+
+	setupRouterWithStore(store).ServeHTTP(response, request)
+
+	if response.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, response.Code)
+	}
+	var got errorResponse
+	if err := json.Unmarshal(response.Body.Bytes(), &got); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if got.Message != "invalid request body" {
+		t.Fatalf("expected invalid-body message, got %q", got.Message)
+	}
+	if after := store.list(); fmt.Sprint(after) != fmt.Sprint(before) {
+		t.Fatalf("invalid UTF-8 changed albums from %#v to %#v", before, after)
+	}
+}
+
 func TestAlbumMutationsRejectDuplicateFields(t *testing.T) {
 	tests := []struct {
 		name   string

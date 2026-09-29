@@ -36,6 +36,8 @@ without requiring the complete album. Album IDs remain immutable. Explicit
 treated as omitted fields. Empty patch objects also return `400 Bad Request`.
 Album creation, replacement, and partial updates reject repeated JSON field
 names, including names that differ only by case, with `400 Bad Request`.
+Album mutations also reject invalid UTF-8 bytes with `400 Bad Request` rather
+than storing replacement characters.
 
 On an interrupt or termination signal, the server stops accepting new
 connections and gives in-flight requests up to five seconds to finish.

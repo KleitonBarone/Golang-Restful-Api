@@ -2,10 +2,15 @@
 
 ## Next
 
-No capabilities are currently scheduled.
+- Keep album request decoding local to the API router instead of changing Gin's
+  process-wide JSON decoder setting when a router is constructed.
+- Document `GET /albums/{id}` not-found responses with the shared error schema
+  in the generated OpenAPI specification.
 
 ## Completed
 
+- Album mutations reject invalid UTF-8 bytes instead of silently storing
+  replacement characters in text fields.
 - Album mutation requests reject duplicate JSON field names so a single
   payload cannot assign conflicting values to the same field.
 - Empty partial album updates return a client error instead of reporting a

@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/gin-gonic/gin"
 )
@@ -236,6 +237,10 @@ func decodeJSONRequest[T any](c *gin.Context) (T, bool) {
 			c.IndentedJSON(http.StatusRequestEntityTooLarge, errorResponse{Message: "request body too large"})
 			return empty, false
 		}
+		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: "invalid request body"})
+		return empty, false
+	}
+	if !utf8.Valid(body) {
 		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: "invalid request body"})
 		return empty, false
 	}
