@@ -43,3 +43,15 @@ On an interrupt or termination signal, the server stops accepting new
 connections and gives in-flight requests up to five seconds to finish.
 The server allows at most ten seconds to read each complete request and ten
 seconds to write its response. Request headers are limited to 16 KiB.
+
+## Verification
+
+Run the same checks as CI before editing and against the final commit:
+
+```text
+pwsh -NoLogo -NoProfile -File ./scripts/verify.ps1
+```
+
+This runs race tests, vet, build, and checks Swagger output without rewriting
+tracked files. Windows requires a compatible MinGW-w64 compiler on PATH or
+under `~/.codex/tools/mingw64`; the script enables CGO in its own process.

@@ -7,6 +7,9 @@
 
 ## Completed
 
+- Local verification and CI use one command for race tests, vet, build, and
+  non-mutating Swagger freshness checks.
+
 - Album request decoding no longer changes Gin's process-wide JSON decoder
   setting when a router is constructed.
 - Album mutations reject invalid UTF-8 bytes instead of silently storing

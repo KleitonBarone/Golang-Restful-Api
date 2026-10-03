@@ -21,17 +21,18 @@
 
 ## Verification
 
-Run all of the following before committing and again before updating the default
-branch:
+Run the same complete verification used by CI before editing and again against
+the final commit before updating the default branch:
 
 ```powershell
-go test ./...
-go vet ./...
-go build ./...
+pwsh -NoLogo -NoProfile -File ./scripts/verify.ps1
 ```
 
-When Swagger annotations change, regenerate the checked-in documentation and
-verify that only intentional generated changes remain.
+This runs race tests, vet, build, and a non-mutating Swagger freshness check.
+Windows needs a compatible MinGW-w64 compiler. The script uses `gcc` on PATH or
+the gardener's compiler under `~/.codex/tools/mingw64`. Missing prerequisites
+block implementation; do not skip race verification.
+When Swagger annotations change, regenerate the checked-in documentation.
 
 ## Conventions
 

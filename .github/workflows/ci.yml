@@ -23,16 +23,6 @@ jobs:
           go-version-file: go.mod
           cache: true
 
-      - name: Check generated API documentation
-        run: |
-          go run github.com/swaggo/swag/cmd/swag@v1.16.6 init -g router.go
-          git diff --exit-code -- docs
-
-      - name: Test with race detector
-        run: go test -race ./...
-
-      - name: Vet
-        run: go vet ./...
-
-      - name: Build
-        run: go build ./...
+      - name: Verify
+        shell: pwsh
+        run: ./scripts/verify.ps1
