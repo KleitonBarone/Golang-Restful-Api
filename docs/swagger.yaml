@@ -152,9 +152,7 @@ paths:
         "404":
           description: Not Found
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/main.errorResponse'
       summary: Get an album by ID
       tags:
       - albums

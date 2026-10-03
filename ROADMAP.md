@@ -2,10 +2,12 @@
 
 ## Next
 
-- Document `GET /albums/{id}` not-found responses with the shared error schema
-  in the generated OpenAPI specification.
+- No capabilities are currently scheduled.
 
 ## Completed
+
+- Album lookup not-found responses use the shared error schema in both the
+  handler and generated OpenAPI specification.
 
 - Local verification and CI use one command for race tests, vet, build, and
   non-mutating Swagger freshness checks.

@@ -138,12 +138,12 @@ func (h albumHandler) postAlbums(c *gin.Context) {
 // @Produce json
 // @Param id path string true "Album ID"
 // @Success 200 {object} album
-// @Failure 404 {object} map[string]string
+// @Failure 404 {object} errorResponse
 // @Router /albums/{id} [get]
 func (h albumHandler) getAlbumByID(c *gin.Context) {
 	currentAlbum, ok := h.store.get(c.Param("id"))
 	if !ok {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "album not found"})
+		c.IndentedJSON(http.StatusNotFound, errorResponse{Message: "album not found"})
 		return
 	}
 
