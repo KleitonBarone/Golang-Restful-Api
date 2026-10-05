@@ -43,6 +43,9 @@ func (h albumHandler) getAlbums(c *gin.Context) {
 	}
 
 	albums := h.store.list()
+	if albums == nil {
+		albums = []album{}
+	}
 	if !hasLimit && !hasOffset {
 		c.IndentedJSON(http.StatusOK, albums)
 		return

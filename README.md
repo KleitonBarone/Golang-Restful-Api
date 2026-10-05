@@ -29,6 +29,8 @@ returns `200 OK` with `{"status":"ok"}`.
 `GET /albums` accepts `limit` and `offset` query parameters. Paginated
 responses include `X-Total-Count` with the collection size. Each pagination
 parameter can appear only once; repeated values return `400 Bad Request`.
+An empty collection returns `[]`, including after deleting the last album.
+Paginated requests for an empty collection include `X-Total-Count: 0`.
 
 `PATCH /albums/{id}` updates any supplied `title`, `artist`, or `price` field
 without requiring the complete album. Album IDs remain immutable. Explicit

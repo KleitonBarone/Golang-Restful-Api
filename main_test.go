@@ -360,6 +360,52 @@ func TestGetAlbums(t *testing.T) {
 	}
 }
 
+func TestGetAlbumsEmptyCollectionReturnsArray(t *testing.T) {
+	stores := []struct {
+		name  string
+		store albumStore
+	}{
+		{name: "initially empty", store: newAlbumStore(nil)},
+		{name: "all albums deleted", store: newAlbumStore(seedAlbums())},
+		{name: "alternate store", store: &stubAlbumStore{}},
+	}
+	for _, scenario := range stores {
+		t.Run(scenario.name, func(t *testing.T) {
+			gin.SetMode(gin.TestMode)
+			router := setupRouterWithStore(scenario.store)
+			for _, current := range scenario.store.list() {
+				response := httptest.NewRecorder()
+				router.ServeHTTP(response, httptest.NewRequest(http.MethodDelete, "/albums/"+current.ID, nil))
+				if response.Code != http.StatusNoContent {
+					t.Fatalf("delete album: expected status %d, got %d", http.StatusNoContent, response.Code)
+				}
+			}
+			for _, query := range []struct {
+				path      string
+				wantTotal string
+			}{
+				{path: "/albums"},
+				{path: "/albums?limit=1", wantTotal: "0"},
+				{path: "/albums?offset=1", wantTotal: "0"},
+			} {
+				t.Run(query.path, func(t *testing.T) {
+					response := httptest.NewRecorder()
+					router.ServeHTTP(response, httptest.NewRequest(http.MethodGet, query.path, nil))
+					if response.Code != http.StatusOK {
+						t.Fatalf("expected status %d, got %d", http.StatusOK, response.Code)
+					}
+					if got := response.Header().Get("X-Total-Count"); got != query.wantTotal {
+						t.Fatalf("expected total count %q, got %q", query.wantTotal, got)
+					}
+					if got := response.Body.String(); got != "[]" {
+						t.Fatalf("expected empty JSON array, got %q", got)
+					}
+				})
+			}
+		})
+	}
+}
+
 func TestGetAlbumsPagination(t *testing.T) {
 	tests := []struct {
 		name string

@@ -2,9 +2,17 @@
 
 ## Next
 
-- No capabilities are currently scheduled.
+- Reject malformed album-list query strings instead of silently dropping invalid
+  percent escapes or semicolon-separated pagination values. Parse query parameters
+  with error handling so an invalid limit cannot become an unbounded list request.
+- Document required album fields and the positive-price constraint in generated
+  OpenAPI schemas so clients can discover the validation enforced by mutations.
 
 ## Completed
+
+- Empty album collections return a JSON array for both full and paginated lists,
+  including after deleting the last album and when an alternate store returns a
+  nil slice. Paginated empty collections retain a total count of zero.
 
 - Album lookup not-found responses use the shared error schema in both the
   handler and generated OpenAPI specification.
