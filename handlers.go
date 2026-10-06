@@ -33,11 +33,16 @@ type albumHandler struct {
 // @Failure 400 {object} errorResponse
 // @Router /albums [get]
 func (h albumHandler) getAlbums(c *gin.Context) {
-	limit, hasLimit, ok := positiveQueryInt(c, "limit")
+	query, err := url.ParseQuery(c.Request.URL.RawQuery)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: "invalid query string"})
+		return
+	}
+	limit, hasLimit, ok := positiveQueryInt(c, query, "limit")
 	if !ok {
 		return
 	}
-	offset, hasOffset, ok := nonNegativeQueryInt(c, "offset")
+	offset, hasOffset, ok := nonNegativeQueryInt(c, query, "offset")
 	if !ok {
 		return
 	}
@@ -63,8 +68,8 @@ func (h albumHandler) getAlbums(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, albums)
 }
 
-func positiveQueryInt(c *gin.Context, name string) (int, bool, bool) {
-	raw, exists, ok := singleQueryValue(c, name)
+func positiveQueryInt(c *gin.Context, query url.Values, name string) (int, bool, bool) {
+	raw, exists, ok := singleQueryValue(c, query, name)
 	if !ok || !exists {
 		return 0, exists, ok
 	}
@@ -76,8 +81,8 @@ func positiveQueryInt(c *gin.Context, name string) (int, bool, bool) {
 	return value, true, true
 }
 
-func nonNegativeQueryInt(c *gin.Context, name string) (int, bool, bool) {
-	raw, exists, ok := singleQueryValue(c, name)
+func nonNegativeQueryInt(c *gin.Context, query url.Values, name string) (int, bool, bool) {
+	raw, exists, ok := singleQueryValue(c, query, name)
 	if !ok || !exists {
 		return 0, exists, ok
 	}
@@ -89,8 +94,8 @@ func nonNegativeQueryInt(c *gin.Context, name string) (int, bool, bool) {
 	return value, true, true
 }
 
-func singleQueryValue(c *gin.Context, name string) (string, bool, bool) {
-	values, exists := c.Request.URL.Query()[name]
+func singleQueryValue(c *gin.Context, query url.Values, name string) (string, bool, bool) {
+	values, exists := query[name]
 	if !exists {
 		return "", false, true
 	}

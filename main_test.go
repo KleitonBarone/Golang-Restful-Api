@@ -415,6 +415,8 @@ func TestGetAlbumsPagination(t *testing.T) {
 		{name: "limit", path: "/albums?limit=2", want: seedAlbums()[:2]},
 		{name: "offset", path: "/albums?offset=1", want: seedAlbums()[1:]},
 		{name: "limit and offset", path: "/albums?limit=1&offset=1", want: seedAlbums()[1:2]},
+		{name: "encoded parameters", path: "/albums?%6cimit=%31&offset=%31", want: seedAlbums()[1:2]},
+		{name: "encoded semicolon in unrelated value", path: "/albums?limit=1&note=a%3Bb", want: seedAlbums()[:1]},
 		{name: "limit exceeds collection", path: "/albums?limit=10", want: seedAlbums()},
 		{name: "offset reaches end", path: "/albums?offset=3", want: []album{}},
 		{name: "offset exceeds collection", path: "/albums?offset=10", want: []album{}},
@@ -459,6 +461,12 @@ func TestGetAlbumsRejectsInvalidPagination(t *testing.T) {
 		{name: "negative offset", path: "/albums?offset=-1", wantMessage: "offset must be a non-negative integer"},
 		{name: "non-integer offset", path: "/albums?offset=one", wantMessage: "offset must be a non-negative integer"},
 		{name: "repeated offset", path: "/albums?offset=0&offset=1", wantMessage: "offset must be specified once"},
+		{name: "invalid limit escape", path: "/albums?limit=%zz", wantMessage: "invalid query string"},
+		{name: "incomplete offset escape", path: "/albums?limit=1&offset=%", wantMessage: "invalid query string"},
+		{name: "invalid parameter name escape", path: "/albums?%6limit=1", wantMessage: "invalid query string"},
+		{name: "semicolon separator", path: "/albums?limit=1;offset=1", wantMessage: "invalid query string"},
+		{name: "invalid repeated limit escape", path: "/albums?limit=1&limit=%zz", wantMessage: "invalid query string"},
+		{name: "invalid unrelated value escape", path: "/albums?note=%zz", wantMessage: "invalid query string"},
 	}
 
 	for _, tt := range tests {
