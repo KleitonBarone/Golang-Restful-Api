@@ -2,10 +2,13 @@
 
 ## Next
 
-- Document required album fields and the positive-price constraint in generated
-  OpenAPI schemas so clients can discover the validation enforced by mutations.
+- No capabilities are currently scheduled.
 
 ## Completed
+
+- Generated OpenAPI schemas document required album fields, non-blank text,
+  and strictly positive prices. Partial updates keep fields optional while
+  documenting the constraints on supplied values.
 
 - Album-list requests reject malformed query strings, including invalid percent
   escapes and unescaped semicolon separators, so parsing errors cannot silently

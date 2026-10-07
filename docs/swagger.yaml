@@ -3,21 +3,40 @@ definitions:
   main.album:
     properties:
       artist:
+        description: Artist must contain at least one non-whitespace character.
+        minLength: 1
         type: string
       id:
+        description: ID must contain at least one non-whitespace character.
+        minLength: 1
         type: string
       price:
+        description: Price must be greater than zero.
         type: number
       title:
+        description: Title must contain at least one non-whitespace character.
+        minLength: 1
         type: string
+    required:
+    - artist
+    - id
+    - price
+    - title
     type: object
   main.albumPatch:
     properties:
       artist:
+        description: Artist, when supplied, must contain at least one non-whitespace
+          character.
+        minLength: 1
         type: string
       price:
+        description: Price, when supplied, must be greater than zero.
         type: number
       title:
+        description: Title, when supplied, must contain at least one non-whitespace
+          character.
+        minLength: 1
         type: string
     type: object
   main.errorResponse:

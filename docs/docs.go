@@ -343,18 +343,31 @@ const docTemplate = `{
     "definitions": {
         "main.album": {
             "type": "object",
+            "required": [
+                "artist",
+                "id",
+                "price",
+                "title"
+            ],
             "properties": {
                 "artist": {
-                    "type": "string"
+                    "description": "Artist must contain at least one non-whitespace character.",
+                    "type": "string",
+                    "minLength": 1
                 },
                 "id": {
-                    "type": "string"
+                    "description": "ID must contain at least one non-whitespace character.",
+                    "type": "string",
+                    "minLength": 1
                 },
                 "price": {
+                    "description": "Price must be greater than zero.",
                     "type": "number"
                 },
                 "title": {
-                    "type": "string"
+                    "description": "Title must contain at least one non-whitespace character.",
+                    "type": "string",
+                    "minLength": 1
                 }
             }
         },
@@ -362,13 +375,18 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "artist": {
-                    "type": "string"
+                    "description": "Artist, when supplied, must contain at least one non-whitespace character.",
+                    "type": "string",
+                    "minLength": 1
                 },
                 "price": {
+                    "description": "Price, when supplied, must be greater than zero.",
                     "type": "number"
                 },
                 "title": {
-                    "type": "string"
+                    "description": "Title, when supplied, must contain at least one non-whitespace character.",
+                    "type": "string",
+                    "minLength": 1
                 }
             }
         },
