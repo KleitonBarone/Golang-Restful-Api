@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"unicode"
 	"unicode/utf8"
 
 	"github.com/gin-gonic/gin"
@@ -290,7 +291,7 @@ func rejectDuplicateFields(body []byte) error {
 		if err != nil {
 			return err
 		}
-		name := strings.ToLower(token.(string))
+		name := foldJSONFieldName(token.(string))
 		if _, exists := seen[name]; exists {
 			return errors.New("duplicate field")
 		}
@@ -302,6 +303,20 @@ func rejectDuplicateFields(body []byte) error {
 	}
 	_, err = decoder.Token()
 	return err
+}
+
+// foldJSONFieldName uses the smallest rune in each Unicode simple-fold set,
+// matching encoding/json's case-insensitive field comparison.
+func foldJSONFieldName(name string) string {
+	return strings.Map(func(r rune) rune {
+		for {
+			next := unicode.SimpleFold(r)
+			if next <= r {
+				return next
+			}
+			r = next
+		}
+	}, name)
 }
 
 // deleteAlbumByID removes the album whose ID matches the path parameter.

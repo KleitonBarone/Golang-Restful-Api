@@ -788,6 +788,9 @@ func TestAlbumMutationsRejectDuplicateFields(t *testing.T) {
 		{name: "create", method: http.MethodPost, path: "/albums", body: `{"id":"4","title":"First","title":"Second","artist":"Miles Davis","price":29.99}`},
 		{name: "replace case variant", method: http.MethodPut, path: "/albums/2", body: `{"id":"2","title":"First","Title":"Second","artist":"Gerry Mulligan","price":24.99}`},
 		{name: "patch escaped name", method: http.MethodPatch, path: "/albums/2", body: `{"title":"First","\u0074itle":"Second"}`},
+		{name: "create Unicode alias", method: http.MethodPost, path: "/albums", body: `{"id":"4","title":"Kind of Blue","artist":"First","artiſt":"Second","price":29.99}`},
+		{name: "replace escaped Unicode alias", method: http.MethodPut, path: "/albums/2", body: `{"id":"2","title":"Jeru","arti\u017ft":"First","ARTIST":"Second","price":24.99}`},
+		{name: "patch Unicode alias", method: http.MethodPatch, path: "/albums/2", body: `{"artiſt":"First","artist":"Second"}`},
 	}
 
 	for _, tt := range tests {

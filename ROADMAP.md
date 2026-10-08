@@ -2,9 +2,6 @@
 
 ## Next
 
-- Reject duplicate album JSON fields under Unicode case folding, so names such
-  as `artist` and `artiſt` cannot assign the same field twice. The current
-  lowercase check differs from the decoder's field matching.
 - Reject explicit null patch values for Unicode aliases of mutable field names.
   The patch null check currently lowercases names while the decoder case-folds
   them, allowing `artiſt: null` to behave like an omitted artist.
@@ -13,6 +10,10 @@
   collection before slicing it in the handler.
 
 ## Completed
+
+- Album mutations reject duplicate JSON fields under the same Unicode case
+  folding used by the decoder, including `artist` and `artiſt`, without changing
+  stored albums.
 
 - Generated OpenAPI schemas document required album fields, non-blank text,
   and strictly positive prices. Partial updates keep fields optional while

@@ -39,7 +39,8 @@ without requiring the complete album. Album IDs remain immutable. Explicit
 `null` values for mutable fields return `400 Bad Request` instead of being
 treated as omitted fields. Empty patch objects also return `400 Bad Request`.
 Album creation, replacement, and partial updates reject repeated JSON field
-names, including names that differ only by case, with `400 Bad Request`.
+names, including names that match under Unicode case folding such as `artist`
+and `artiſt`, with `400 Bad Request`.
 Album mutations also reject invalid UTF-8 bytes with `400 Bad Request` rather
 than storing replacement characters.
 
