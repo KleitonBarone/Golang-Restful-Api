@@ -2,7 +2,15 @@
 
 ## Next
 
-- No capabilities are currently scheduled.
+- Reject duplicate album JSON fields under Unicode case folding, so names such
+  as `artist` and `artiſt` cannot assign the same field twice. The current
+  lowercase check differs from the decoder's field matching.
+- Reject explicit null patch values for Unicode aliases of mutable field names.
+  The patch null check currently lowercases names while the decoder case-folds
+  them, allowing `artiſt: null` to behave like an omitted artist.
+- Copy only the requested page of albums while obtaining its total count from
+  the same storage snapshot. Paginated requests currently copy the complete
+  collection before slicing it in the handler.
 
 ## Completed
 
