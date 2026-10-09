@@ -2,14 +2,14 @@
 
 ## Next
 
-- Reject explicit null patch values for Unicode aliases of mutable field names.
-  The patch null check currently lowercases names while the decoder case-folds
-  them, allowing `artiſt: null` to behave like an omitted artist.
 - Copy only the requested page of albums while obtaining its total count from
   the same storage snapshot. Paginated requests currently copy the complete
   collection before slicing it in the handler.
 
 ## Completed
+
+- Partial album updates reject explicit null values for Unicode aliases of
+  mutable fields, including `artiſt`, without applying other supplied changes.
 
 - Album mutations reject duplicate JSON fields under the same Unicode case
   folding used by the decoder, including `artist` and `artiſt`, without changing

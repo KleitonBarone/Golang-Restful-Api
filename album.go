@@ -42,8 +42,8 @@ func (p *albumPatch) UnmarshalJSON(data []byte) error {
 	}
 	for name, value := range fields {
 		if bytes.Equal(bytes.TrimSpace(value), []byte("null")) {
-			switch strings.ToLower(name) {
-			case "title", "artist", "price":
+			switch foldJSONFieldName(name) {
+			case "TITLE", "ARTIST", "PRICE":
 				return fmt.Errorf("%s cannot be null", name)
 			}
 		}
