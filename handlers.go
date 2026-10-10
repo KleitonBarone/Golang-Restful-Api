@@ -48,23 +48,16 @@ func (h albumHandler) getAlbums(c *gin.Context) {
 		return
 	}
 
-	albums := h.store.list()
+	var albums []album
+	if !hasLimit && !hasOffset {
+		albums = h.store.list()
+	} else {
+		var total int
+		albums, total = h.store.listPage(limit, offset)
+		c.Header("X-Total-Count", strconv.Itoa(total))
+	}
 	if albums == nil {
 		albums = []album{}
-	}
-	if !hasLimit && !hasOffset {
-		c.IndentedJSON(http.StatusOK, albums)
-		return
-	}
-	c.Header("X-Total-Count", strconv.Itoa(len(albums)))
-	if offset >= len(albums) {
-		c.IndentedJSON(http.StatusOK, albums[len(albums):])
-		return
-	}
-
-	albums = albums[offset:]
-	if hasLimit && limit < len(albums) {
-		albums = albums[:limit]
 	}
 	c.IndentedJSON(http.StatusOK, albums)
 }

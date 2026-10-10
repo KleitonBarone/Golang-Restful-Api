@@ -199,6 +199,19 @@ func (s *stubAlbumStore) list() []album {
 	return append([]album(nil), s.albums...)
 }
 
+func (s *stubAlbumStore) listPage(limit, offset int) ([]album, int) {
+	albums := s.list()
+	total := len(albums)
+	if offset >= total {
+		return nil, total
+	}
+	albums = albums[offset:]
+	if limit > 0 && limit < len(albums) {
+		albums = albums[:limit]
+	}
+	return albums, total
+}
+
 func (s *stubAlbumStore) get(id string) (album, bool) {
 	for _, candidate := range s.albums {
 		if candidate.ID == id {
@@ -441,6 +454,58 @@ func TestGetAlbumsPagination(t *testing.T) {
 			}
 			if fmt.Sprint(got) != fmt.Sprint(tt.want) {
 				t.Fatalf("expected albums %#v, got %#v", tt.want, got)
+			}
+		})
+	}
+}
+
+type pageOnlyAlbumStore struct {
+	stubAlbumStore
+	t      *testing.T
+	limit  int
+	offset int
+}
+
+func (s *pageOnlyAlbumStore) list() []album {
+	s.t.Fatal("paginated request must not copy the full collection")
+	return nil
+}
+
+func (s *pageOnlyAlbumStore) listPage(limit, offset int) ([]album, int) {
+	s.limit, s.offset = limit, offset
+	return s.albums, 42
+}
+
+func TestGetAlbumsUsesStoragePageAndTotal(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	for _, query := range []struct {
+		path   string
+		limit  int
+		offset int
+	}{
+		{path: "/albums?limit=1&offset=2", limit: 1, offset: 2},
+		{path: "/albums?offset=0"},
+		{path: "/albums?limit=1", limit: 1},
+	} {
+		t.Run(query.path, func(t *testing.T) {
+			store := &pageOnlyAlbumStore{stubAlbumStore: stubAlbumStore{albums: seedAlbums()[2:]}, t: t}
+			response := httptest.NewRecorder()
+			setupRouterWithStore(store).ServeHTTP(response, httptest.NewRequest(http.MethodGet, query.path, nil))
+			if response.Code != http.StatusOK {
+				t.Fatalf("expected status %d, got %d", http.StatusOK, response.Code)
+			}
+			if store.limit != query.limit || store.offset != query.offset {
+				t.Fatalf("expected storage page (%d, %d), got (%d, %d)", query.limit, query.offset, store.limit, store.offset)
+			}
+			if got := response.Header().Get("X-Total-Count"); got != "42" {
+				t.Fatalf("expected storage total 42, got %q", got)
+			}
+			var got []album
+			if err := json.Unmarshal(response.Body.Bytes(), &got); err != nil {
+				t.Fatalf("decode response: %v", err)
+			}
+			if fmt.Sprint(got) != fmt.Sprint(store.albums) {
+				t.Fatalf("expected storage page %#v, got %#v", store.albums, got)
 			}
 		})
 	}

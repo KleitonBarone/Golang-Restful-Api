@@ -4,6 +4,8 @@ import "sync"
 
 type albumStore interface {
 	list() []album
+	// listPage returns a detached page and total from one snapshot. Zero limit is unbounded; offset must be non-negative.
+	listPage(limit, offset int) ([]album, int)
 	get(id string) (album, bool)
 	create(album) bool
 	update(id string, album album) (album, bool)
@@ -26,6 +28,20 @@ func (s *inMemoryAlbumStore) list() []album {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return append([]album(nil), s.albums...)
+}
+
+func (s *inMemoryAlbumStore) listPage(limit, offset int) ([]album, int) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	total := len(s.albums)
+	if offset >= total {
+		return nil, total
+	}
+	end := total
+	if limit > 0 && limit < total-offset {
+		end = offset + limit
+	}
+	return append([]album(nil), s.albums[offset:end]...), total
 }
 
 func (s *inMemoryAlbumStore) get(id string) (album, bool) {

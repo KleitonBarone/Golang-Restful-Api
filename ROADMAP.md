@@ -2,11 +2,12 @@
 
 ## Next
 
-- Copy only the requested page of albums while obtaining its total count from
-  the same storage snapshot. Paginated requests currently copy the complete
-  collection before slicing it in the handler.
+- No capabilities are currently scheduled.
 
 ## Completed
+
+- Paginated album requests copy only the requested page and obtain the total
+  count from the same locked storage snapshot, without copying the full collection.
 
 - Partial album updates reject explicit null values for Unicode aliases of
   mutable fields, including `artiſt`, without applying other supplied changes.
