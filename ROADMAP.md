@@ -2,12 +2,13 @@
 
 ## Next
 
-1. Reject unpaired Unicode surrogate escapes in album mutation JSON before the
-   decoder silently replaces them, preserving the submitted text contract.
-2. Release deleted album data from the in-memory slice's unused backing storage
+1. Release deleted album data from the in-memory slice's unused backing storage
    so removed strings are not retained until later writes replace them.
 
 ## Completed
+
+- Album mutations reject unpaired Unicode surrogate escapes without changing
+  stored albums, while preserving valid pairs and literal replacement characters.
 
 - Paginated album requests copy only the requested page and obtain the total
   count from the same locked storage snapshot, without copying the full collection.

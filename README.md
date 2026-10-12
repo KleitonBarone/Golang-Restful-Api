@@ -41,8 +41,10 @@ treated as omitted fields. Empty patch objects also return `400 Bad Request`.
 Album creation, replacement, and partial updates reject repeated JSON field
 names, including names that match under Unicode case folding such as `artist`
 and `artiſt`, with `400 Bad Request`.
-Album mutations also reject invalid UTF-8 bytes with `400 Bad Request` rather
-than storing replacement characters.
+Album mutations also reject invalid UTF-8 bytes and unpaired Unicode surrogate
+escapes with `400 Bad Request` rather than storing replacement characters.
+Valid surrogate pairs and intentionally supplied replacement characters remain
+accepted.
 
 On an interrupt or termination signal, the server stops accepting new
 connections and gives in-flight requests up to five seconds to finish.
