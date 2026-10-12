@@ -2,7 +2,10 @@
 
 ## Next
 
-- No capabilities are currently scheduled.
+1. Reject unpaired Unicode surrogate escapes in album mutation JSON before the
+   decoder silently replaces them, preserving the submitted text contract.
+2. Release deleted album data from the in-memory slice's unused backing storage
+   so removed strings are not retained until later writes replace them.
 
 ## Completed
 
