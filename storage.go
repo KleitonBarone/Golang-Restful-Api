@@ -1,6 +1,9 @@
 package main
 
-import "sync"
+import (
+	"slices"
+	"sync"
+)
 
 type albumStore interface {
 	list() []album
@@ -97,7 +100,7 @@ func (s *inMemoryAlbumStore) delete(id string) bool {
 	defer s.mu.Unlock()
 	for index, candidate := range s.albums {
 		if candidate.ID == id {
-			s.albums = append(s.albums[:index], s.albums[index+1:]...)
+			s.albums = slices.Delete(s.albums, index, index+1)
 			return true
 		}
 	}

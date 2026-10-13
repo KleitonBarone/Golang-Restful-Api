@@ -6,6 +6,37 @@ import (
 	"testing"
 )
 
+func TestAlbumStoreDeleteClearsUnusedStorage(t *testing.T) {
+	albums := seedAlbums()
+	for _, scenario := range []struct {
+		name    string
+		initial []album
+		id      string
+		want    []album
+	}{
+		{name: "first", initial: albums, id: "1", want: albums[1:]},
+		{name: "middle", initial: albums, id: "2", want: []album{albums[0], albums[2]}},
+		{name: "last", initial: albums, id: "3", want: albums[:2]},
+		{name: "only", initial: albums[:1], id: "1"},
+	} {
+		t.Run(scenario.name, func(t *testing.T) {
+			store := newAlbumStore(scenario.initial)
+			backing := store.albums
+			if !store.delete(scenario.id) {
+				t.Fatal("expected album to be deleted")
+			}
+			if got := store.list(); !slices.Equal(got, scenario.want) {
+				t.Fatalf("expected remaining albums %v, got %v", scenario.want, got)
+			}
+			for _, unused := range backing[len(store.albums):] {
+				if unused != (album{}) {
+					t.Fatalf("unused backing storage retains album data: %v", unused)
+				}
+			}
+		})
+	}
+}
+
 func TestAlbumStorePageBounds(t *testing.T) {
 	albums := seedAlbums()
 	maxInt := int(^uint(0) >> 1)

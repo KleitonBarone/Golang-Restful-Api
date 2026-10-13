@@ -2,10 +2,12 @@
 
 ## Next
 
-1. Release deleted album data from the in-memory slice's unused backing storage
-   so removed strings are not retained until later writes replace them.
+No capabilities are currently scheduled.
 
 ## Completed
+
+- Deleted albums are cleared from the in-memory slice's unused backing storage
+  so removed strings are not retained until later writes replace them.
 
 - Album mutations reject unpaired Unicode surrogate escapes without changing
   stored albums, while preserving valid pairs and literal replacement characters.
