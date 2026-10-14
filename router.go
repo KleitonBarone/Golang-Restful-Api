@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"net/http"
+	"net/url"
 
 	_ "project/web-service/docs"
 
@@ -32,6 +33,8 @@ func setupRouter() *gin.Engine {
 func setupRouterWithStore(store albumStore) *gin.Engine {
 	router := gin.Default()
 	router.UseRawPath = true
+	router.UnescapePathValues = false
+	router.Use(unescapePathParams)
 	router.HandleMethodNotAllowed = true
 	router.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, errorResponse{Message: "route not found"})
@@ -58,6 +61,22 @@ func setupRouterWithStore(store albumStore) *gin.Engine {
 	})
 
 	return router
+}
+
+// unescapePathParams decodes raw path parameters once using path semantics.
+// Gin's query decoding would turn literal plus signs into spaces.
+func unescapePathParams(c *gin.Context) {
+	if c.Request.URL.RawPath == "" {
+		return // Gin already used the decoded URL.Path.
+	}
+	for i := range c.Params {
+		value, err := url.PathUnescape(c.Params[i].Value)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, errorResponse{Message: "invalid request path"})
+			return
+		}
+		c.Params[i].Value = value
+	}
 }
 
 // getHealth reports whether the service process is ready to handle requests.

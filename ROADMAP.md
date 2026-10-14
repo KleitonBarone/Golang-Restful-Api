@@ -2,13 +2,13 @@
 
 ## Next
 
-1. Preserve literal plus signs in album IDs when their canonical URLs also
-   contain escaped characters. Gin currently query-decodes raw path parameters,
-   which can resolve a plus-containing ID to a different album with a space.
-2. Let interactive OpenAPI requests use the serving host instead of the fixed
+1. Let interactive OpenAPI requests use the serving host instead of the fixed
    `localhost:8080` host, so documentation works with `LISTEN_ADDRESS` overrides.
 
 ## Completed
+
+- Canonical album URLs preserve literal plus signs alongside escaped path
+  separators, so lookup and mutations cannot target another ID with a space.
 
 - Deleted albums are cleared from the in-memory slice's unused backing storage
   so removed strings are not retained until later writes replace them.

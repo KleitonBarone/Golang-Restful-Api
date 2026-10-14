@@ -46,6 +46,10 @@ escapes with `400 Bad Request` rather than storing replacement characters.
 Valid surrogate pairs and intentionally supplied replacement characters remain
 accepted.
 
+Canonical album URLs preserve literal plus signs in IDs, including IDs that also
+contain escaped path separators. Lookup, replacement, partial updates, and
+deletion use the same path decoding.
+
 On an interrupt or termination signal, the server stops accepting new
 connections and gives in-flight requests up to five seconds to finish.
 The server allows at most ten seconds to read each complete request and ten
