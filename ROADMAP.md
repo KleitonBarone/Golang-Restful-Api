@@ -2,7 +2,11 @@
 
 ## Next
 
-No capabilities are currently scheduled.
+1. Preserve literal plus signs in album IDs when their canonical URLs also
+   contain escaped characters. Gin currently query-decodes raw path parameters,
+   which can resolve a plus-containing ID to a different album with a space.
+2. Let interactive OpenAPI requests use the serving host instead of the fixed
+   `localhost:8080` host, so documentation works with `LISTEN_ADDRESS` overrides.
 
 ## Completed
 
