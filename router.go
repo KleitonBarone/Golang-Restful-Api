@@ -23,7 +23,6 @@ type healthResponse struct {
 // @version 1.0
 // @description A simple RESTful API for managing albums
 
-// @host localhost:8080
 // @BasePath /
 
 func setupRouter() *gin.Engine {

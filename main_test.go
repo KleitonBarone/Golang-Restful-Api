@@ -25,6 +25,29 @@ func testRouter(t *testing.T) *gin.Engine {
 	return setupRouterWithStore(newAlbumStore(seedAlbums()))
 }
 
+func TestOpenAPIUsesServingOrigin(t *testing.T) {
+	request := httptest.NewRequest(http.MethodGet, "https://albums.example:9090/swagger/doc.json", nil)
+	response := httptest.NewRecorder()
+	testRouter(t).ServeHTTP(response, request)
+	if response.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d: %s", response.Code, response.Body.String())
+	}
+	var spec struct {
+		Host     string   `json:"host"`
+		Schemes  []string `json:"schemes"`
+		BasePath string   `json:"basePath"`
+	}
+	if err := json.Unmarshal(response.Body.Bytes(), &spec); err != nil {
+		t.Fatalf("decode OpenAPI document: %v", err)
+	}
+	if spec.Host != "" || len(spec.Schemes) != 0 {
+		t.Fatalf("OpenAPI must inherit the serving origin, got host %q and schemes %v", spec.Host, spec.Schemes)
+	}
+	if spec.BasePath != "/" {
+		t.Fatalf("expected API base path /, got %q", spec.BasePath)
+	}
+}
+
 func TestRouterDoesNotChangeGinJSONDecoderSetting(t *testing.T) {
 	previous := binding.EnableDecoderDisallowUnknownFields
 	t.Cleanup(func() { binding.EnableDecoderDisallowUnknownFields = previous })

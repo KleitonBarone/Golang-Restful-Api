@@ -49,7 +49,6 @@ definitions:
       status:
         type: string
     type: object
-host: localhost:8080
 info:
   contact: {}
   description: A simple RESTful API for managing albums

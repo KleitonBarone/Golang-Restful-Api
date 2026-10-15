@@ -3,6 +3,8 @@
 ## API docs
 
 Once the server is running, visit http://localhost:8080/docs for interactive API documentation powered by Scalar.
+When using a different listen address, open `/docs` at that address. Interactive
+requests use the same host and scheme as the documentation page.
 
 ### Updating OpenAPI spec
 

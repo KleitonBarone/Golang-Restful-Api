@@ -2,10 +2,12 @@
 
 ## Next
 
-1. Let interactive OpenAPI requests use the serving host instead of the fixed
-   `localhost:8080` host, so documentation works with `LISTEN_ADDRESS` overrides.
+No capabilities are currently scheduled.
 
 ## Completed
+
+- Interactive OpenAPI requests use the serving host and scheme, so documentation
+  works with `LISTEN_ADDRESS` overrides.
 
 - Canonical album URLs preserve literal plus signs alongside escaped path
   separators, so lookup and mutations cannot target another ID with a space.
