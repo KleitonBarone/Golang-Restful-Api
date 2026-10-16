@@ -31,6 +31,8 @@ func setupRouter() *gin.Engine {
 
 func setupRouterWithStore(store albumStore) *gin.Engine {
 	router := gin.Default()
+	// The service has no trusted-proxy configuration, so use the connection peer.
+	router.ForwardedByClientIP = false
 	router.UseRawPath = true
 	router.UnescapePathValues = false
 	router.Use(unescapePathParams)

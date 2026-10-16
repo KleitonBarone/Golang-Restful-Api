@@ -25,6 +25,10 @@ go run .
 It listens on `localhost:8080` by default. Set `LISTEN_ADDRESS` to bind to a
 different address, such as `:9090`.
 
+Request logs use the connection peer's IP address. `X-Forwarded-For` and
+`X-Real-IP` headers are ignored because the service has no trusted-proxy
+configuration. Behind a reverse proxy, logs therefore identify the proxy.
+
 Use `GET /health` for local and automated readiness checks. A healthy process
 returns `200 OK` with `{"status":"ok"}`.
 

@@ -2,14 +2,14 @@
 
 ## Next
 
-1. Direct connections report the peer's client IP in request logs instead of
-   trusting spoofed forwarding headers. The router currently uses Gin's default
-   trust of every proxy, and the service has no trusted-proxy configuration.
-2. Trailing-slash redirects preserve escaped album IDs. The router matches raw
+1. Trailing-slash redirects preserve escaped album IDs. The router matches raw
    paths, but Gin's default redirect rebuilds the URL from the decoded path,
    which can turn an encoded separator into another path segment.
 
 ## Completed
+
+- Request logs use the connection peer's client IP instead of trusting spoofed
+  forwarding headers from direct connections.
 
 - Interactive OpenAPI requests use the serving host and scheme, so documentation
   works with `LISTEN_ADDRESS` overrides.
