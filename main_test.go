@@ -10,6 +10,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -674,6 +675,76 @@ func TestPostAlbumsLocationSupportsEscapedPathSeparator(t *testing.T) {
 	}
 	if got.ID != "catalog/4" {
 		t.Fatalf("expected album id %q, got %q", "catalog/4", got.ID)
+	}
+}
+
+func TestAlbumTrailingSlashRedirectPreservesID(t *testing.T) {
+	for _, id := range []string{"catalog/4", "catalog+live/4", "catalog/", "catalog%2F4", "catalog?/4"} {
+		for _, method := range []string{http.MethodGet, http.MethodPut, http.MethodPatch, http.MethodDelete} {
+			t.Run(method+"/"+id, func(t *testing.T) {
+				original := album{ID: id, Title: "Original", Artist: "Artist", Price: 10}
+				store := newAlbumStore([]album{original})
+				router := setupRouterWithStore(store)
+				body := ""
+				if method == http.MethodPut {
+					payload, err := json.Marshal(original)
+					if err != nil {
+						t.Fatal(err)
+					}
+					body = string(payload)
+				} else if method == http.MethodPatch {
+					body = `{"title":"Updated"}`
+				}
+				canonical := "/albums/" + url.PathEscape(id)
+				query := "?source=a%2Fb&label=x+y"
+				request := httptest.NewRequest(method, canonical+"/"+query, bytes.NewBufferString(body))
+				request.Header.Set("Content-Type", "application/json")
+				response := httptest.NewRecorder()
+				router.ServeHTTP(response, request)
+
+				wantStatus := http.StatusTemporaryRedirect
+				if method == http.MethodGet {
+					wantStatus = http.StatusMovedPermanently
+				}
+				if response.Code != wantStatus {
+					t.Fatalf("expected redirect status %d, got %d: %s", wantStatus, response.Code, response.Body.String())
+				}
+				location := response.Header().Get("Location")
+				if want := canonical + query; location != want {
+					t.Fatalf("expected location %q, got %q", want, location)
+				}
+				if got, ok := store.get(id); !ok || got != original {
+					t.Fatalf("redirect changed album: %#v, found %v", got, ok)
+				}
+
+				followed := httptest.NewRecorder()
+				followRequest := httptest.NewRequest(method, location, bytes.NewBufferString(body))
+				followRequest.Header.Set("Content-Type", "application/json")
+				router.ServeHTTP(followed, followRequest)
+				if method == http.MethodDelete {
+					if followed.Code != http.StatusNoContent {
+						t.Fatalf("expected delete status 204, got %d: %s", followed.Code, followed.Body.String())
+					}
+					if _, ok := store.get(id); ok {
+						t.Fatal("redirected delete left the album in storage")
+					}
+					return
+				}
+				if followed.Code != http.StatusOK {
+					t.Fatalf("expected followed status 200, got %d: %s", followed.Code, followed.Body.String())
+				}
+				var got album
+				if err := json.Unmarshal(followed.Body.Bytes(), &got); err != nil {
+					t.Fatal(err)
+				}
+				if got.ID != id {
+					t.Fatalf("expected album ID %q, got %q", id, got.ID)
+				}
+				if method == http.MethodPatch && got.Title != "Updated" {
+					t.Fatalf("redirected patch did not update title: %#v", got)
+				}
+			})
+		}
 	}
 }
 

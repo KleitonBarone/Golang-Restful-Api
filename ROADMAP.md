@@ -2,11 +2,13 @@
 
 ## Next
 
-1. Trailing-slash redirects preserve escaped album IDs. The router matches raw
-   paths, but Gin's default redirect rebuilds the URL from the decoded path,
-   which can turn an encoded separator into another path segment.
+No capabilities are scheduled.
 
 ## Completed
+
+- Trailing-slash redirects preserve escaped album IDs and query strings across
+  lookup, replacement, partial updates, and deletion, retaining GET's 301 and
+  mutations' method-preserving 307 responses.
 
 - Request logs use the connection peer's client IP instead of trusting spoofed
   forwarding headers from direct connections.

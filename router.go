@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"net/http"
 	"net/url"
+	"strings"
 
 	_ "project/web-service/docs"
 
@@ -52,6 +53,8 @@ func setupRouterWithStore(store albumStore) *gin.Engine {
 	router.PUT("/albums/:id", handler.putAlbumByID)
 	router.PATCH("/albums/:id", handler.patchAlbumByID)
 	router.DELETE("/albums/:id", handler.deleteAlbumByID)
+	router.Match([]string{http.MethodGet, http.MethodPut, http.MethodPatch, http.MethodDelete},
+		"/albums/:id/", redirectAlbumTrailingSlash)
 
 	// Swagger JSON endpoint (used by Scalar)
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -62,6 +65,19 @@ func setupRouterWithStore(store albumStore) *gin.Engine {
 	})
 
 	return router
+}
+
+// redirectAlbumTrailingSlash keeps escaped ID separators intact instead of
+// letting Gin rebuild the redirect from the decoded URL.Path.
+func redirectAlbumTrailingSlash(c *gin.Context) {
+	target := *c.Request.URL
+	target.Path = strings.TrimSuffix(target.Path, "/")
+	target.RawPath = strings.TrimSuffix(target.RawPath, "/")
+	code := http.StatusTemporaryRedirect
+	if c.Request.Method == http.MethodGet {
+		code = http.StatusMovedPermanently
+	}
+	c.Redirect(code, target.RequestURI())
 }
 
 // unescapePathParams decodes raw path parameters once using path semantics.

@@ -54,7 +54,9 @@ accepted.
 
 Canonical album URLs preserve literal plus signs in IDs, including IDs that also
 contain escaped path separators. Lookup, replacement, partial updates, and
-deletion use the same path decoding.
+deletion use the same path decoding. Trailing-slash redirects on these routes
+preserve escaped IDs and query strings, using 301 for GET and 307 for mutations
+so clients retain the request method and body.
 
 On an interrupt or termination signal, the server stops accepting new
 connections and gives in-flight requests up to five seconds to finish.
