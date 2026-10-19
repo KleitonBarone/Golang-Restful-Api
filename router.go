@@ -50,6 +50,7 @@ func setupRouterWithStore(store albumStore) *gin.Engine {
 	router.GET("/albums", handler.getAlbums)
 	router.GET("/albums/:id", handler.getAlbumByID)
 	router.POST("/albums", handler.postAlbums)
+	router.Match([]string{http.MethodGet, http.MethodPost}, "/albums/", redirectAlbumTrailingSlash)
 	router.PUT("/albums/:id", handler.putAlbumByID)
 	router.PATCH("/albums/:id", handler.patchAlbumByID)
 	router.DELETE("/albums/:id", handler.deleteAlbumByID)
@@ -67,8 +68,8 @@ func setupRouterWithStore(store albumStore) *gin.Engine {
 	return router
 }
 
-// redirectAlbumTrailingSlash keeps escaped ID separators intact instead of
-// letting Gin rebuild the redirect from the decoded URL.Path.
+// redirectAlbumTrailingSlash preserves escaped IDs and query strings without
+// letting Gin rebuild the redirect or incorporate untrusted proxy headers.
 func redirectAlbumTrailingSlash(c *gin.Context) {
 	target := *c.Request.URL
 	target.Path = strings.TrimSuffix(target.Path, "/")

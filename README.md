@@ -57,6 +57,9 @@ contain escaped path separators. Lookup, replacement, partial updates, and
 deletion use the same path decoding. Trailing-slash redirects on these routes
 preserve escaped IDs and query strings, using 301 for GET and 307 for mutations
 so clients retain the request method and body.
+Collection redirects from `/albums/` to `/albums` also preserve query strings
+and use 301 for GET and 307 for POST. They ignore `X-Forwarded-Prefix`, matching
+the service's policy of not trusting proxy headers.
 
 On an interrupt or termination signal, the server stops accepting new
 connections and gives in-flight requests up to five seconds to finish.
