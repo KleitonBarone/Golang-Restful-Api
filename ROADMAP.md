@@ -2,7 +2,11 @@
 
 ## Next
 
-No capabilities are scheduled.
+1. Keep collection trailing-slash redirects independent of untrusted
+   `X-Forwarded-Prefix` headers, preserving query strings and POST request bodies.
+   Gin's automatic `/albums/` redirect currently incorporates that header.
+2. Support `HEAD /health` for readiness clients that only need status and headers,
+   reusing the existing health contract without sending a response body.
 
 ## Completed
 
