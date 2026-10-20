@@ -2,10 +2,12 @@
 
 ## Next
 
-1. Support `HEAD /health` for readiness clients that only need status and headers,
-   reusing the existing health contract without sending a response body.
+No capabilities are currently scheduled.
 
 ## Completed
+
+- `HEAD /health` returns the existing readiness status and content type without
+  a response body for clients that only need status and headers.
 
 - Collection trailing-slash redirects ignore untrusted `X-Forwarded-Prefix`
   headers while preserving query strings, GET's 301 response, and POST's

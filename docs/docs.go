@@ -337,6 +337,24 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "head": {
+                "description": "Report whether the service process is ready to handle requests",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Check service health",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.healthResponse"
+                        }
+                    }
+                }
             }
         }
     },

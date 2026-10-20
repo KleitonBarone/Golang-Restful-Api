@@ -30,7 +30,8 @@ Request logs use the connection peer's IP address. `X-Forwarded-For` and
 configuration. Behind a reverse proxy, logs therefore identify the proxy.
 
 Use `GET /health` for local and automated readiness checks. A healthy process
-returns `200 OK` with `{"status":"ok"}`.
+returns `200 OK` with `{"status":"ok"}`. `HEAD /health` returns the same status
+and content type without a response body.
 
 `GET /albums` accepts `limit` and `offset` query parameters. Paginated
 responses include `X-Total-Count` with the collection size. Each pagination

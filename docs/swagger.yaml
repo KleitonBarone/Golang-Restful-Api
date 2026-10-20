@@ -272,4 +272,16 @@ paths:
       summary: Check service health
       tags:
       - health
+    head:
+      description: Report whether the service process is ready to handle requests
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.healthResponse'
+      summary: Check service health
+      tags:
+      - health
 swagger: "2.0"

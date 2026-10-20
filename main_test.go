@@ -325,6 +325,24 @@ func TestHealth(t *testing.T) {
 	}
 }
 
+func TestHeadHealth(t *testing.T) {
+	router := testRouter(t)
+	get := httptest.NewRecorder()
+	router.ServeHTTP(get, httptest.NewRequest(http.MethodGet, "/health", nil))
+	head := httptest.NewRecorder()
+	router.ServeHTTP(head, httptest.NewRequest(http.MethodHead, "/health", nil))
+
+	if head.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, head.Code)
+	}
+	if got, want := head.Header().Get("Content-Type"), get.Header().Get("Content-Type"); got != want {
+		t.Errorf("expected GET content type %q, got %q", want, got)
+	}
+	if head.Body.Len() != 0 {
+		t.Errorf("expected no response body, got %q", head.Body.String())
+	}
+}
+
 func TestRouterReturnsJSONForRoutingErrors(t *testing.T) {
 	tests := []struct {
 		name        string

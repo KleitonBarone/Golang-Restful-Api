@@ -47,6 +47,7 @@ func setupRouterWithStore(store albumStore) *gin.Engine {
 	handler := albumHandler{store: store}
 
 	router.GET("/health", getHealth)
+	router.HEAD("/health", getHealth)
 	router.GET("/albums", handler.getAlbums)
 	router.GET("/albums/:id", handler.getAlbumByID)
 	router.POST("/albums", handler.postAlbums)
@@ -104,6 +105,12 @@ func unescapePathParams(c *gin.Context) {
 // @Produce json
 // @Success 200 {object} healthResponse
 // @Router /health [get]
+// @Router /health [head]
 func getHealth(c *gin.Context) {
+	if c.Request.Method == http.MethodHead {
+		c.Header("Content-Type", "application/json; charset=utf-8")
+		c.Status(http.StatusOK)
+		return
+	}
 	c.JSON(http.StatusOK, healthResponse{Status: "ok"})
 }
