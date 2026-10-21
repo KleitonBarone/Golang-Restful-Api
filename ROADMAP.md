@@ -2,7 +2,13 @@
 
 ## Next
 
-No capabilities are currently scheduled.
+1. Health and documentation trailing-slash redirects ignore untrusted
+   `X-Forwarded-Prefix` headers while preserving query strings and existing
+   redirect status codes. Album redirects already enforce this policy, but
+   `/health/` and `/docs/` still use Gin's header-aware redirect behavior.
+2. Canonical verification rejects unformatted Go source without rewriting files,
+   so local checks and CI enforce the repository's existing gofmt convention
+   alongside race tests, vet, build, and Swagger freshness.
 
 ## Completed
 
