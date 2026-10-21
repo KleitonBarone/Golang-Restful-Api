@@ -48,15 +48,16 @@ func setupRouterWithStore(store albumStore) *gin.Engine {
 
 	router.GET("/health", getHealth)
 	router.HEAD("/health", getHealth)
+	router.Match([]string{http.MethodGet, http.MethodHead}, "/health/", redirectTrailingSlash)
 	router.GET("/albums", handler.getAlbums)
 	router.GET("/albums/:id", handler.getAlbumByID)
 	router.POST("/albums", handler.postAlbums)
-	router.Match([]string{http.MethodGet, http.MethodPost}, "/albums/", redirectAlbumTrailingSlash)
+	router.Match([]string{http.MethodGet, http.MethodPost}, "/albums/", redirectTrailingSlash)
 	router.PUT("/albums/:id", handler.putAlbumByID)
 	router.PATCH("/albums/:id", handler.patchAlbumByID)
 	router.DELETE("/albums/:id", handler.deleteAlbumByID)
 	router.Match([]string{http.MethodGet, http.MethodPut, http.MethodPatch, http.MethodDelete},
-		"/albums/:id/", redirectAlbumTrailingSlash)
+		"/albums/:id/", redirectTrailingSlash)
 
 	// Swagger JSON endpoint (used by Scalar)
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -65,13 +66,14 @@ func setupRouterWithStore(store albumStore) *gin.Engine {
 	router.GET("/docs", func(c *gin.Context) {
 		c.Data(http.StatusOK, "text/html; charset=utf-8", scalarHTML)
 	})
+	router.GET("/docs/", redirectTrailingSlash)
 
 	return router
 }
 
-// redirectAlbumTrailingSlash preserves escaped IDs and query strings without
+// redirectTrailingSlash preserves escaped paths and query strings without
 // letting Gin rebuild the redirect or incorporate untrusted proxy headers.
-func redirectAlbumTrailingSlash(c *gin.Context) {
+func redirectTrailingSlash(c *gin.Context) {
 	target := *c.Request.URL
 	target.Path = strings.TrimSuffix(target.Path, "/")
 	target.RawPath = strings.TrimSuffix(target.RawPath, "/")

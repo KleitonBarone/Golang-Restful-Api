@@ -32,6 +32,9 @@ configuration. Behind a reverse proxy, logs therefore identify the proxy.
 Use `GET /health` for local and automated readiness checks. A healthy process
 returns `200 OK` with `{"status":"ok"}`. `HEAD /health` returns the same status
 and content type without a response body.
+Trailing-slash redirects for `/health/` and `/docs/` ignore untrusted
+`X-Forwarded-Prefix` headers and preserve query strings. GET requests retain
+301 redirects, and HEAD requests to `/health/` retain 307 redirects.
 
 `GET /albums` accepts `limit` and `offset` query parameters. Paginated
 responses include `X-Total-Count` with the collection size. Each pagination
