@@ -28,7 +28,8 @@ the final commit before updating the default branch:
 pwsh -NoLogo -NoProfile -File ./scripts/verify.ps1
 ```
 
-This runs race tests, vet, build, and a non-mutating Swagger freshness check.
+This checks Go formatting without rewriting files, then runs race tests, vet,
+build, and a non-mutating Swagger freshness check.
 Windows needs a compatible MinGW-w64 compiler. The script uses `gcc` on PATH or
 the gardener's compiler under `~/.codex/tools/mingw64`. Missing prerequisites
 block implementation; do not skip race verification.
@@ -37,6 +38,8 @@ When Swagger annotations change, regenerate the checked-in documentation.
 ## Conventions
 
 - Format Go files with `gofmt`.
+- Keep Go source line endings as LF, as enforced by `.gitattributes`, so gofmt
+  verification works on Windows as well as Linux.
 - Cover handler behavior with route-level tests.
 - Keep existing response shapes and status codes compatible unless a requested
   change explicitly updates the API contract.

@@ -78,6 +78,8 @@ Run the same checks as CI before editing and against the final commit:
 pwsh -NoLogo -NoProfile -File ./scripts/verify.ps1
 ```
 
-This runs race tests, vet, build, and checks Swagger output without rewriting
-tracked files. Windows requires a compatible MinGW-w64 compiler on PATH or
+This checks Go formatting, runs race tests, vet, build, and checks Swagger
+output without rewriting files. If formatting fails, run `gofmt -w` on the
+reported paths and verify again.
+Windows requires a compatible MinGW-w64 compiler on PATH or
 under `~/.codex/tools/mingw64`; the script enables CGO in its own process.

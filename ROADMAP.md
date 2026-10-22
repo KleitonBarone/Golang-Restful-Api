@@ -2,11 +2,13 @@
 
 ## Next
 
-1. Canonical verification rejects unformatted Go source without rewriting files,
-   so local checks and CI enforce the repository's existing gofmt convention
-   alongside race tests, vet, build, and Swagger freshness.
+No capabilities are scheduled.
 
 ## Completed
+
+- Canonical verification rejects unformatted Go source without rewriting files,
+  so local checks and CI enforce the repository's existing gofmt convention
+  alongside race tests, vet, build, and Swagger freshness.
 
 - Health and documentation trailing-slash redirects ignore untrusted
   `X-Forwarded-Prefix` headers while preserving query strings, GET's 301

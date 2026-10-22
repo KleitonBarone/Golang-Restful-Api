@@ -7,6 +7,11 @@ $PSNativeCommandUseErrorActionPreference = $false
 Push-Location (Split-Path $PSScriptRoot -Parent)
 $generatedRoot = Join-Path ([IO.Path]::GetTempPath()) ("gardener-swagger-" + [guid]::NewGuid().ToString('N'))
 try {
+    $unformatted = @(& gofmt -l .)
+    if ($LASTEXITCODE -ne 0) { throw "gofmt verification failed with exit code $LASTEXITCODE" }
+    if ($unformatted.Count -gt 0) {
+        throw "Go source needs formatting. Run gofmt -w on these files:`n$($unformatted -join "`n")"
+    }
     $env:CGO_ENABLED = '1'
     if ($IsWindows -and -not (Get-Command gcc -ErrorAction SilentlyContinue) -and -not $env:CC) {
         $compiler = Join-Path ([Environment]::GetFolderPath('UserProfile')) '.codex\tools\mingw64\bin\gcc.exe'
