@@ -2,14 +2,15 @@
 
 ## Next
 
-1. Reject dot-only album IDs `.` and `..` on creation and replacement so the
-   canonical `Location` cannot resolve to the collection or its parent instead
-   of the album. Keep other IDs, including dots within names, compatible.
-2. Pin the Scalar documentation script to a reviewed version so the interactive
+- Pin the Scalar documentation script to a reviewed version so the interactive
    API UI does not change independently of repository changes. The embedded page
    currently loads an unversioned package from jsDelivr.
 
 ## Completed
+
+- Album creation and replacement reject IDs `.` and `..` so canonical album
+  URLs cannot resolve to the collection or its parent. Other IDs containing
+  dots remain accepted.
 
 - Canonical verification rejects unformatted Go source without rewriting files,
   so local checks and CI enforce the repository's existing gofmt convention

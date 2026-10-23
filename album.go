@@ -10,7 +10,7 @@ import (
 
 // album represents data about a record album.
 type album struct {
-	// ID must contain at least one non-whitespace character.
+	// ID must contain at least one non-whitespace character. The values "." and ".." are reserved.
 	ID string `json:"id" validate:"required" minLength:"1"`
 	// Title must contain at least one non-whitespace character.
 	Title string `json:"title" validate:"required" minLength:"1"`
@@ -64,6 +64,8 @@ func validateAlbum(candidate album) string {
 	switch {
 	case strings.TrimSpace(candidate.ID) == "":
 		return "id is required"
+	case candidate.ID == "." || candidate.ID == "..":
+		return "id must not be . or .."
 	case strings.TrimSpace(candidate.Title) == "":
 		return "title is required"
 	case strings.TrimSpace(candidate.Artist) == "":

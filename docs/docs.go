@@ -374,7 +374,7 @@ const docTemplate = `{
                     "minLength": 1
                 },
                 "id": {
-                    "description": "ID must contain at least one non-whitespace character.",
+                    "description": "ID must contain at least one non-whitespace character. The values \".\" and \"..\" are reserved.",
                     "type": "string",
                     "minLength": 1
                 },

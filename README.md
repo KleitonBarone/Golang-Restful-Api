@@ -65,6 +65,11 @@ Collection redirects from `/albums/` to `/albums` also preserve query strings
 and use 301 for GET and 307 for POST. They ignore `X-Forwarded-Prefix`, matching
 the service's policy of not trusting proxy headers.
 
+Creation and replacement reject album IDs `.` and `..` with `400 Bad Request`
+because URL resolution would treat their canonical URLs as the collection or
+its parent. Other IDs containing dots, such as `.hidden`, `...`, or `album.v1`,
+remain accepted.
+
 On an interrupt or termination signal, the server stops accepting new
 connections and gives in-flight requests up to five seconds to finish.
 The server allows at most ten seconds to read each complete request and ten
