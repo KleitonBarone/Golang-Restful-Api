@@ -2,11 +2,12 @@
 
 ## Next
 
-- Pin the Scalar documentation script to a reviewed version so the interactive
-   API UI does not change independently of repository changes. The embedded page
-   currently loads an unversioned package from jsDelivr.
+No capabilities are currently scheduled.
 
 ## Completed
+
+- The interactive documentation pins Scalar to version 1.76.0 so CDN package
+  updates cannot change the UI independently of repository changes.
 
 - Album creation and replacement reject IDs `.` and `..` so canonical album
   URLs cannot resolve to the collection or its parent. Other IDs containing

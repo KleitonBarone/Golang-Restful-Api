@@ -6,6 +6,10 @@ Once the server is running, visit http://localhost:8080/docs for interactive API
 When using a different listen address, open `/docs` at that address. Interactive
 requests use the same host and scheme as the documentation page.
 
+The documentation page loads Scalar 1.76.0 from jsDelivr. To update it, review
+the new release and change the exact version in `docs/scalar.html`. Keep the
+version pinned so CDN updates cannot change the UI independently of this repo.
+
 ### Updating OpenAPI spec
 
 After modifying Swagger annotations in the Go source files, regenerate the spec:
