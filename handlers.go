@@ -33,6 +33,7 @@ type albumHandler struct {
 // @Header 200 {integer} X-Total-Count "Total number of albums when pagination is requested"
 // @Failure 400 {object} errorResponse
 // @Router /albums [get]
+// @Router /albums [head]
 func (h albumHandler) getAlbums(c *gin.Context) {
 	query, err := url.ParseQuery(c.Request.URL.RawQuery)
 	if err != nil {
@@ -142,6 +143,7 @@ func (h albumHandler) postAlbums(c *gin.Context) {
 // @Success 200 {object} album
 // @Failure 404 {object} errorResponse
 // @Router /albums/{id} [get]
+// @Router /albums/{id} [head]
 func (h albumHandler) getAlbumByID(c *gin.Context) {
 	currentAlbum, ok := h.store.get(c.Param("id"))
 	if !ok {

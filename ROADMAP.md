@@ -2,14 +2,16 @@
 
 ## Next
 
-1. Support `HEAD /albums` and `HEAD /albums/{id}` for clients that need status
-   and pagination metadata without response bodies. Reuse GET validation and
-   preserve the existing JSON responses for GET requests.
-2. Document the enforced JSON mutation request contract in the README and
+1. Document the enforced JSON mutation request contract in the README and
    OpenAPI descriptions, including the 64 KiB body limit, required media type,
    and rejection of unknown fields and additional JSON values.
 
 ## Completed
+
+- `HEAD /albums` and `HEAD /albums/{id}` reuse GET validation, lookup status,
+  content type, and pagination totals without response bodies. Trailing-slash
+  HEAD redirects preserve escaped IDs and query strings without trusting
+  forwarding headers.
 
 - The interactive documentation pins Scalar to version 1.76.0 so CDN package
   updates cannot change the UI independently of repository changes.

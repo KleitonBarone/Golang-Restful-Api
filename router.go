@@ -50,13 +50,15 @@ func setupRouterWithStore(store albumStore) *gin.Engine {
 	router.HEAD("/health", getHealth)
 	router.Match([]string{http.MethodGet, http.MethodHead}, "/health/", redirectTrailingSlash)
 	router.GET("/albums", handler.getAlbums)
+	router.HEAD("/albums", omitResponseBody, handler.getAlbums)
 	router.GET("/albums/:id", handler.getAlbumByID)
+	router.HEAD("/albums/:id", omitResponseBody, handler.getAlbumByID)
 	router.POST("/albums", handler.postAlbums)
-	router.Match([]string{http.MethodGet, http.MethodPost}, "/albums/", redirectTrailingSlash)
+	router.Match([]string{http.MethodGet, http.MethodHead, http.MethodPost}, "/albums/", redirectTrailingSlash)
 	router.PUT("/albums/:id", handler.putAlbumByID)
 	router.PATCH("/albums/:id", handler.patchAlbumByID)
 	router.DELETE("/albums/:id", handler.deleteAlbumByID)
-	router.Match([]string{http.MethodGet, http.MethodPut, http.MethodPatch, http.MethodDelete},
+	router.Match([]string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodDelete},
 		"/albums/:id/", redirectTrailingSlash)
 
 	// Swagger JSON endpoint (used by Scalar)
@@ -69,6 +71,25 @@ func setupRouterWithStore(store albumStore) *gin.Engine {
 	router.GET("/docs/", redirectTrailingSlash)
 
 	return router
+}
+
+// omitResponseBody lets HEAD reuse GET handlers, including their error responses.
+func omitResponseBody(c *gin.Context) {
+	c.Writer = headResponseWriter{c.Writer}
+}
+
+type headResponseWriter struct {
+	gin.ResponseWriter
+}
+
+func (w headResponseWriter) Write(body []byte) (int, error) {
+	w.WriteHeaderNow()
+	return len(body), nil
+}
+
+func (w headResponseWriter) WriteString(body string) (int, error) {
+	w.WriteHeaderNow()
+	return len(body), nil
 }
 
 // redirectTrailingSlash preserves escaped paths and query strings without

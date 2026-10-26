@@ -91,6 +91,40 @@ paths:
       summary: List all albums
       tags:
       - albums
+    head:
+      description: Get all albums in the collection. Limit and offset can each be
+        specified once.
+      parameters:
+      - description: Maximum number of albums to return
+        in: query
+        minimum: 1
+        name: limit
+        type: integer
+      - description: Number of albums to skip
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Total-Count:
+              description: Total number of albums when pagination is requested
+              type: integer
+          schema:
+            items:
+              $ref: '#/definitions/main.album'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.errorResponse'
+      summary: List all albums
+      tags:
+      - albums
     post:
       consumes:
       - application/json
@@ -154,6 +188,28 @@ paths:
       tags:
       - albums
     get:
+      description: Get a single album by its ID
+      parameters:
+      - description: Album ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.album'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/main.errorResponse'
+      summary: Get an album by ID
+      tags:
+      - albums
+    head:
       description: Get a single album by its ID
       parameters:
       - description: Album ID

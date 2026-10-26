@@ -48,6 +48,12 @@ semicolon separators, also return `400 Bad Request`.
 An empty collection returns `[]`, including after deleting the last album.
 Paginated requests for an empty collection include `X-Total-Count: 0`.
 
+`HEAD /albums` and `HEAD /albums/{id}` return the same status and content type
+as GET without a response body, including validation errors and missing albums.
+Paginated HEAD requests validate `limit` and `offset` and include `X-Total-Count`
+on success. Trailing-slash HEAD requests redirect with 307, preserving escaped
+IDs and query strings and ignoring `X-Forwarded-Prefix`.
+
 `PATCH /albums/{id}` updates any supplied `title`, `artist`, or `price` field
 without requiring the complete album. Album IDs remain immutable. Explicit
 `null` values for mutable fields return `400 Bad Request` instead of being
