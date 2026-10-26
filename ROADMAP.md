@@ -2,7 +2,12 @@
 
 ## Next
 
-No capabilities are currently scheduled.
+1. Support `HEAD /albums` and `HEAD /albums/{id}` for clients that need status
+   and pagination metadata without response bodies. Reuse GET validation and
+   preserve the existing JSON responses for GET requests.
+2. Document the enforced JSON mutation request contract in the README and
+   OpenAPI descriptions, including the 64 KiB body limit, required media type,
+   and rejection of unknown fields and additional JSON values.
 
 ## Completed
 
