@@ -54,6 +54,16 @@ Paginated HEAD requests validate `limit` and `offset` and include `X-Total-Count
 on success. Trailing-slash HEAD requests redirect with 307, preserving escaped
 IDs and query strings and ignoring `X-Forwarded-Prefix`.
 
+`POST /albums`, `PUT /albums/{id}`, and `PATCH /albums/{id}` require
+`Content-Type: application/json`. Media type parameters such as `charset=utf-8`
+are accepted; a missing, malformed, or different media type returns
+`415 Unsupported Media Type`.
+The complete body is limited to 64 KiB, including trailing whitespace or data.
+Larger bodies with an accepted media type return `413 Request Entity Too Large`.
+Send exactly one JSON object containing only recognized fields. Malformed JSON,
+unknown fields such as `genre`, and additional JSON values return
+`400 Bad Request`. Rejected requests leave stored albums unchanged.
+
 `PATCH /albums/{id}` updates any supplied `title`, `artist`, or `price` field
 without requiring the complete album. Album IDs remain immutable. Explicit
 `null` values for mutable fields return `400 Bad Request` instead of being

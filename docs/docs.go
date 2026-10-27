@@ -66,7 +66,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Add a new album to the collection",
+                "description": "Add a new album to the collection.\nRequires Content-Type: application/json; media type parameters are accepted. The complete body, including trailing whitespace or data, must not exceed 64 KiB.\nSend exactly one JSON object. Malformed JSON, unknown fields, duplicate fields under Unicode case folding, invalid UTF-8, and unpaired Unicode surrogate escapes are rejected with 400. Rejected requests leave stored albums unchanged.",
                 "consumes": [
                     "application/json"
                 ],
@@ -114,13 +114,13 @@ const docTemplate = `{
                         }
                     },
                     "413": {
-                        "description": "Request Entity Too Large",
+                        "description": "Request body exceeds 64 KiB",
                         "schema": {
                             "$ref": "#/definitions/main.errorResponse"
                         }
                     },
                     "415": {
-                        "description": "Unsupported Media Type",
+                        "description": "Missing, malformed, or unsupported Content-Type; application/json is required",
                         "schema": {
                             "$ref": "#/definitions/main.errorResponse"
                         }
@@ -212,7 +212,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Replace an existing album while retaining its ID",
+                "description": "Replace an existing album while retaining its ID.\nRequires Content-Type: application/json; media type parameters are accepted. The complete body, including trailing whitespace or data, must not exceed 64 KiB.\nSend exactly one JSON object. Malformed JSON, unknown fields, duplicate fields under Unicode case folding, invalid UTF-8, and unpaired Unicode surrogate escapes are rejected with 400. Rejected requests leave stored albums unchanged.",
                 "consumes": [
                     "application/json"
                 ],
@@ -261,13 +261,13 @@ const docTemplate = `{
                         }
                     },
                     "413": {
-                        "description": "Request Entity Too Large",
+                        "description": "Request body exceeds 64 KiB",
                         "schema": {
                             "$ref": "#/definitions/main.errorResponse"
                         }
                     },
                     "415": {
-                        "description": "Unsupported Media Type",
+                        "description": "Missing, malformed, or unsupported Content-Type; application/json is required",
                         "schema": {
                             "$ref": "#/definitions/main.errorResponse"
                         }
@@ -338,7 +338,7 @@ const docTemplate = `{
                 }
             },
             "patch": {
-                "description": "Update selected fields of an existing album while retaining its ID. Explicit null fields are rejected.",
+                "description": "Update selected fields of an existing album while retaining its ID. Explicit null fields are rejected.\nRequires Content-Type: application/json; media type parameters are accepted. The complete body, including trailing whitespace or data, must not exceed 64 KiB.\nSend exactly one JSON object. Malformed JSON, unknown fields, duplicate fields under Unicode case folding, invalid UTF-8, and unpaired Unicode surrogate escapes are rejected with 400. Rejected requests leave stored albums unchanged.",
                 "consumes": [
                     "application/json"
                 ],
@@ -387,13 +387,13 @@ const docTemplate = `{
                         }
                     },
                     "413": {
-                        "description": "Request Entity Too Large",
+                        "description": "Request body exceeds 64 KiB",
                         "schema": {
                             "$ref": "#/definitions/main.errorResponse"
                         }
                     },
                     "415": {
-                        "description": "Unsupported Media Type",
+                        "description": "Missing, malformed, or unsupported Content-Type; application/json is required",
                         "schema": {
                             "$ref": "#/definitions/main.errorResponse"
                         }

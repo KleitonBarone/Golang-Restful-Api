@@ -103,7 +103,9 @@ func singleQueryValue(c *gin.Context, query url.Values, name string) (string, bo
 
 // postAlbums adds an album from JSON received in the request body.
 // @Summary Create an album
-// @Description Add a new album to the collection
+// @Description Add a new album to the collection.
+// @Description Requires Content-Type: application/json; media type parameters are accepted. The complete body, including trailing whitespace or data, must not exceed 64 KiB.
+// @Description Send exactly one JSON object. Malformed JSON, unknown fields, duplicate fields under Unicode case folding, invalid UTF-8, and unpaired Unicode surrogate escapes are rejected with 400. Rejected requests leave stored albums unchanged.
 // @Tags albums
 // @Accept json
 // @Produce json
@@ -112,8 +114,8 @@ func singleQueryValue(c *gin.Context, query url.Values, name string) (string, bo
 // @Header 201 {string} Location "Canonical URL of the created album"
 // @Failure 400 {object} errorResponse
 // @Failure 409 {object} errorResponse
-// @Failure 413 {object} errorResponse
-// @Failure 415 {object} errorResponse
+// @Failure 413 {object} errorResponse "Request body exceeds 64 KiB"
+// @Failure 415 {object} errorResponse "Missing, malformed, or unsupported Content-Type; application/json is required"
 // @Router /albums [post]
 func (h albumHandler) postAlbums(c *gin.Context) {
 	newAlbum, ok := decodeJSONRequest[album](c)
@@ -156,7 +158,9 @@ func (h albumHandler) getAlbumByID(c *gin.Context) {
 
 // putAlbumByID replaces the album whose ID matches the path parameter.
 // @Summary Update an album
-// @Description Replace an existing album while retaining its ID
+// @Description Replace an existing album while retaining its ID.
+// @Description Requires Content-Type: application/json; media type parameters are accepted. The complete body, including trailing whitespace or data, must not exceed 64 KiB.
+// @Description Send exactly one JSON object. Malformed JSON, unknown fields, duplicate fields under Unicode case folding, invalid UTF-8, and unpaired Unicode surrogate escapes are rejected with 400. Rejected requests leave stored albums unchanged.
 // @Tags albums
 // @Accept json
 // @Produce json
@@ -165,8 +169,8 @@ func (h albumHandler) getAlbumByID(c *gin.Context) {
 // @Success 200 {object} album
 // @Failure 400 {object} errorResponse
 // @Failure 404 {object} errorResponse
-// @Failure 413 {object} errorResponse
-// @Failure 415 {object} errorResponse
+// @Failure 413 {object} errorResponse "Request body exceeds 64 KiB"
+// @Failure 415 {object} errorResponse "Missing, malformed, or unsupported Content-Type; application/json is required"
 // @Router /albums/{id} [put]
 func (h albumHandler) putAlbumByID(c *gin.Context) {
 	updatedAlbum, ok := decodeJSONRequest[album](c)
@@ -194,6 +198,8 @@ func (h albumHandler) putAlbumByID(c *gin.Context) {
 // patchAlbumByID updates only the supplied mutable fields of an existing album.
 // @Summary Partially update an album
 // @Description Update selected fields of an existing album while retaining its ID. Explicit null fields are rejected.
+// @Description Requires Content-Type: application/json; media type parameters are accepted. The complete body, including trailing whitespace or data, must not exceed 64 KiB.
+// @Description Send exactly one JSON object. Malformed JSON, unknown fields, duplicate fields under Unicode case folding, invalid UTF-8, and unpaired Unicode surrogate escapes are rejected with 400. Rejected requests leave stored albums unchanged.
 // @Tags albums
 // @Accept json
 // @Produce json
@@ -202,8 +208,8 @@ func (h albumHandler) putAlbumByID(c *gin.Context) {
 // @Success 200 {object} album
 // @Failure 400 {object} errorResponse
 // @Failure 404 {object} errorResponse
-// @Failure 413 {object} errorResponse
-// @Failure 415 {object} errorResponse
+// @Failure 413 {object} errorResponse "Request body exceeds 64 KiB"
+// @Failure 415 {object} errorResponse "Missing, malformed, or unsupported Content-Type; application/json is required"
 // @Router /albums/{id} [patch]
 func (h albumHandler) patchAlbumByID(c *gin.Context) {
 	changes, ok := decodeJSONRequest[albumPatch](c)

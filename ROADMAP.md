@@ -2,11 +2,13 @@
 
 ## Next
 
-1. Document the enforced JSON mutation request contract in the README and
-   OpenAPI descriptions, including the 64 KiB body limit, required media type,
-   and rejection of unknown fields and additional JSON values.
+No capabilities are currently scheduled.
 
 ## Completed
+
+- README and OpenAPI descriptions document the enforced POST, PUT, and PATCH
+  JSON request contract, including the 64 KiB complete-body limit, required
+  media type, rejected fields and JSON values, and unchanged state on rejection.
 
 - `HEAD /albums` and `HEAD /albums/{id}` reuse GET validation, lookup status,
   content type, and pagination totals without response bodies. Trailing-slash
