@@ -223,6 +223,10 @@ func (s *stubAlbumStore) list() []album {
 	return append([]album(nil), s.albums...)
 }
 
+func (s *stubAlbumStore) count() int {
+	return len(s.albums)
+}
+
 func (s *stubAlbumStore) listPage(limit, offset int) ([]album, int) {
 	albums := s.list()
 	total := len(albums)

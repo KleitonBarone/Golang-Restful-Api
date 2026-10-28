@@ -49,6 +49,16 @@ func (h albumHandler) getAlbums(c *gin.Context) {
 		return
 	}
 
+	// HEAD needs validated metadata, without copying or encoding album payloads.
+	if c.Request.Method == http.MethodHead {
+		if hasLimit || hasOffset {
+			c.Header("X-Total-Count", strconv.Itoa(h.store.count()))
+		}
+		c.Header("Content-Type", "application/json; charset=utf-8")
+		c.Status(http.StatusOK)
+		return
+	}
+
 	var albums []album
 	if !hasLimit && !hasOffset {
 		albums = h.store.list()

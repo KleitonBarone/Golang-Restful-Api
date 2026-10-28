@@ -7,6 +7,7 @@ import (
 
 type albumStore interface {
 	list() []album
+	count() int
 	// listPage returns a detached page and total from one snapshot. Zero limit is unbounded; offset must be non-negative.
 	listPage(limit, offset int) ([]album, int)
 	get(id string) (album, bool)
@@ -31,6 +32,12 @@ func (s *inMemoryAlbumStore) list() []album {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return append([]album(nil), s.albums...)
+}
+
+func (s *inMemoryAlbumStore) count() int {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return len(s.albums)
 }
 
 func (s *inMemoryAlbumStore) listPage(limit, offset int) ([]album, int) {

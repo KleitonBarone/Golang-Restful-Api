@@ -7,6 +7,60 @@ import (
 	"testing"
 )
 
+type metadataOnlyAlbumStore struct {
+	stubAlbumStore
+	t          *testing.T
+	countCalls int
+}
+
+func (s *metadataOnlyAlbumStore) list() []album {
+	s.t.Fatal("HEAD must not read the collection payload")
+	return nil
+}
+
+func (s *metadataOnlyAlbumStore) listPage(limit, offset int) ([]album, int) {
+	s.t.Fatal("HEAD must not read a page payload")
+	return nil, 0
+}
+
+func (s *metadataOnlyAlbumStore) count() int {
+	s.countCalls++
+	return 42
+}
+
+func TestHeadAlbumsDoesNotReadAlbumPayloads(t *testing.T) {
+	for _, scenario := range []struct {
+		path       string
+		status     int
+		total      string
+		countCalls int
+	}{
+		{path: "/albums", status: http.StatusOK},
+		{path: "/albums?limit=1", status: http.StatusOK, total: "42", countCalls: 1},
+		{path: "/albums?offset=99", status: http.StatusOK, total: "42", countCalls: 1},
+		{path: "/albums?limit=2&offset=1", status: http.StatusOK, total: "42", countCalls: 1},
+		{path: "/albums?limit=0", status: http.StatusBadRequest},
+		{path: "/albums?offset=-1", status: http.StatusBadRequest},
+		{path: "/albums?limit=1&limit=2", status: http.StatusBadRequest},
+		{path: "/albums?limit=%zz", status: http.StatusBadRequest},
+	} {
+		t.Run(scenario.path, func(t *testing.T) {
+			store := &metadataOnlyAlbumStore{t: t}
+			response := httptest.NewRecorder()
+			setupRouterWithStore(store).ServeHTTP(response, httptest.NewRequest(http.MethodHead, scenario.path, nil))
+			if response.Code != scenario.status || response.Body.Len() != 0 {
+				t.Fatalf("expected bodyless status %d, got %d %s", scenario.status, response.Code, response.Body)
+			}
+			if got := response.Header().Get("X-Total-Count"); got != scenario.total {
+				t.Fatalf("expected total %q, got %q", scenario.total, got)
+			}
+			if store.countCalls != scenario.countCalls {
+				t.Fatalf("expected %d count calls, got %d", scenario.countCalls, store.countCalls)
+			}
+		})
+	}
+}
+
 func TestHeadAlbumsMatchesGetMetadata(t *testing.T) {
 	for _, scenario := range []struct {
 		path   string

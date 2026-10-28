@@ -2,16 +2,17 @@
 
 ## Next
 
-1. Serve collection HEAD requests without copying or JSON-encoding album data.
-   The shared GET handler currently builds a complete response before its HEAD
-   writer discards the body. Preserve validation and pagination totals while
-   making metadata checks independent of collection payload size.
-2. Cancel superseded CI runs for the same branch or pull request. The current
+1. Cancel superseded CI runs for the same branch or pull request. The current
    workflow runs full race, vet, build, and Swagger checks for every push without
    a concurrency group, so obsolete revisions can consume runners and delay
    feedback on the latest revision.
 
 ## Completed
+
+- Collection HEAD requests preserve GET validation, content type, and pagination
+  totals without copying or JSON-encoding album payloads. Paginated requests
+  obtain only the synchronized collection count; unpaginated requests do not
+  read storage.
 
 - README and OpenAPI descriptions document the enforced POST, PUT, and PATCH
   JSON request contract, including the 64 KiB complete-body limit, required
