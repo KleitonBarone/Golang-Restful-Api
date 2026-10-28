@@ -2,7 +2,14 @@
 
 ## Next
 
-No capabilities are currently scheduled.
+1. Serve collection HEAD requests without copying or JSON-encoding album data.
+   The shared GET handler currently builds a complete response before its HEAD
+   writer discards the body. Preserve validation and pagination totals while
+   making metadata checks independent of collection payload size.
+2. Cancel superseded CI runs for the same branch or pull request. The current
+   workflow runs full race, vet, build, and Swagger checks for every push without
+   a concurrency group, so obsolete revisions can consume runners and delay
+   feedback on the latest revision.
 
 ## Completed
 
