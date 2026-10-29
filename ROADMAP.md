@@ -2,12 +2,13 @@
 
 ## Next
 
-1. Cancel superseded CI runs for the same branch or pull request. The current
-   workflow runs full race, vet, build, and Swagger checks for every push without
-   a concurrency group, so obsolete revisions can consume runners and delay
-   feedback on the latest revision.
+No capabilities are currently scheduled.
 
 ## Completed
+
+- CI cancels superseded runs of the same workflow for a branch or pull request,
+  keeping race, vet, build, and Swagger checks focused on the latest revision
+  while separate refs retain independent runs.
 
 - Collection HEAD requests preserve GET validation, content type, and pagination
   totals without copying or JSON-encoding album payloads. Paginated requests
