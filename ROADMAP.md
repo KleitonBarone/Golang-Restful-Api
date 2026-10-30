@@ -2,7 +2,12 @@
 
 ## Next
 
-No capabilities are currently scheduled.
+- Single-album HEAD requests check existence and return GET metadata without
+  JSON-encoding the album payload, matching the collection HEAD optimization.
+- The documentation page supports HEAD requests with the same status and content
+  type as GET, including its trailing-slash redirect, for link and uptime checks.
+- CI verification has an explicit job timeout so stalled Go or Swagger commands
+  cannot consume the default six-hour runner window.
 
 ## Completed
 
