@@ -163,6 +163,12 @@ func (h albumHandler) getAlbumByID(c *gin.Context) {
 		return
 	}
 
+	if c.Request.Method == http.MethodHead {
+		c.Header("Content-Type", "application/json; charset=utf-8")
+		c.Status(http.StatusOK)
+		return
+	}
+
 	c.IndentedJSON(http.StatusOK, currentAlbum)
 }
 

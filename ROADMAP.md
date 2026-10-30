@@ -2,14 +2,16 @@
 
 ## Next
 
-- Single-album HEAD requests check existence and return GET metadata without
-  JSON-encoding the album payload, matching the collection HEAD optimization.
 - The documentation page supports HEAD requests with the same status and content
   type as GET, including its trailing-slash redirect, for link and uptime checks.
 - CI verification has an explicit job timeout so stalled Go or Swagger commands
   cannot consume the default six-hour runner window.
 
 ## Completed
+
+- Single-album HEAD requests check existence and return GET status and content
+  type without JSON-encoding the album payload. Missing albums retain the shared
+  error response metadata and an empty body.
 
 - CI cancels superseded runs of the same workflow for a branch or pull request,
   keeping race, vet, build, and Swagger checks focused on the latest revision
