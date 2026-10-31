@@ -16,6 +16,7 @@ func TestHealthAndDocsRedirectsIgnoreForwardedPrefix(t *testing.T) {
 		{http.MethodGet, "/health", http.StatusMovedPermanently},
 		{http.MethodHead, "/health", http.StatusTemporaryRedirect},
 		{http.MethodGet, "/docs", http.StatusMovedPermanently},
+		{http.MethodHead, "/docs", http.StatusTemporaryRedirect},
 	} {
 		for _, prefix := range []string{"", "/untrusted"} {
 			t.Run(route.method+route.path+"/prefix="+prefix, func(t *testing.T) {

@@ -2,12 +2,14 @@
 
 ## Next
 
-- The documentation page supports HEAD requests with the same status and content
-  type as GET, including its trailing-slash redirect, for link and uptime checks.
 - CI verification has an explicit job timeout so stalled Go or Swagger commands
   cannot consume the default six-hour runner window.
 
 ## Completed
+
+- `HEAD /docs` returns GET's status and content type without a response body for
+  link and uptime checks. Its trailing-slash redirect uses 307, preserves query
+  strings, and ignores untrusted forwarding headers.
 
 - Single-album HEAD requests check existence and return GET status and content
   type without JSON-encoding the album payload. Missing albums retain the shared

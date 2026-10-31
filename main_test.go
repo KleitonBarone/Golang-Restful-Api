@@ -49,6 +49,26 @@ func TestOpenAPIUsesServingOrigin(t *testing.T) {
 	}
 }
 
+func TestHeadDocs(t *testing.T) {
+	router := testRouter(t)
+	get := httptest.NewRecorder()
+	router.ServeHTTP(get, httptest.NewRequest(http.MethodGet, "/docs", nil))
+	if get.Code != http.StatusOK || !bytes.Equal(get.Body.Bytes(), scalarHTML) {
+		t.Fatalf("expected GET to serve the documentation page, got status %d: %s", get.Code, get.Body.String())
+	}
+	head := httptest.NewRecorder()
+	router.ServeHTTP(head, httptest.NewRequest(http.MethodHead, "/docs", nil))
+	if head.Code != get.Code {
+		t.Errorf("expected GET status %d, got %d", get.Code, head.Code)
+	}
+	if got, want := head.Header().Get("Content-Type"), get.Header().Get("Content-Type"); got != want {
+		t.Errorf("expected GET content type %q, got %q", want, got)
+	}
+	if head.Body.Len() != 0 {
+		t.Errorf("expected no response body, got %q", head.Body.String())
+	}
+}
+
 func TestRouterDoesNotChangeGinJSONDecoderSetting(t *testing.T) {
 	previous := binding.EnableDecoderDisallowUnknownFields
 	t.Cleanup(func() { binding.EnableDecoderDisallowUnknownFields = previous })

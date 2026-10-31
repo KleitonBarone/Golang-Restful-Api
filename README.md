@@ -5,6 +5,8 @@
 Once the server is running, visit http://localhost:8080/docs for interactive API documentation powered by Scalar.
 When using a different listen address, open `/docs` at that address. Interactive
 requests use the same host and scheme as the documentation page.
+`HEAD /docs` returns the same status and content type as GET without a response
+body for link and uptime checks.
 
 The documentation page loads Scalar 1.76.0 from jsDelivr. To update it, review
 the new release and change the exact version in `docs/scalar.html`. Keep the
@@ -38,7 +40,7 @@ returns `200 OK` with `{"status":"ok"}`. `HEAD /health` returns the same status
 and content type without a response body.
 Trailing-slash redirects for `/health/` and `/docs/` ignore untrusted
 `X-Forwarded-Prefix` headers and preserve query strings. GET requests retain
-301 redirects, and HEAD requests to `/health/` retain 307 redirects.
+301 redirects, and HEAD requests use 307 redirects.
 
 `GET /albums` accepts `limit` and `offset` query parameters. Paginated
 responses include `X-Total-Count` with the collection size. Each pagination
