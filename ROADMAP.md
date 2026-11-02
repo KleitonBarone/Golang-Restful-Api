@@ -2,10 +2,12 @@
 
 ## Next
 
-- CI verification has an explicit job timeout so stalled Go or Swagger commands
-  cannot consume the default six-hour runner window.
+No capabilities are currently scheduled.
 
 ## Completed
+
+- CI verification has a ten-minute job timeout so stalled setup, Go, or Swagger
+  commands cannot consume the default six-hour runner window.
 
 - `HEAD /docs` returns GET's status and content type without a response body for
   link and uptime checks. Its trailing-slash redirect uses 307, preserves query
