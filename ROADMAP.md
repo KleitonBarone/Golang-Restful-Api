@@ -2,7 +2,11 @@
 
 ## Next
 
-No capabilities are currently scheduled.
+1. Canonical verification rejects stale Go module metadata without rewriting
+   `go.mod` or `go.sum`, so dependency changes fail locally and in CI before
+   tests run. Keep module files in LF format for consistent Windows checks.
+2. `HEAD /swagger/doc.json` supports link and uptime checks for the OpenAPI
+   document loaded by Scalar, matching GET metadata without a response body.
 
 ## Completed
 
