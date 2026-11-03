@@ -7,6 +7,8 @@ $PSNativeCommandUseErrorActionPreference = $false
 Push-Location (Split-Path $PSScriptRoot -Parent)
 $generatedRoot = Join-Path ([IO.Path]::GetTempPath()) ("gardener-swagger-" + [guid]::NewGuid().ToString('N'))
 try {
+    & go mod tidy -diff
+    if ($LASTEXITCODE -ne 0) { throw 'Go module metadata needs updating. Run go mod tidy and commit go.mod and go.sum.' }
     $unformatted = @(& gofmt -l .)
     if ($LASTEXITCODE -ne 0) { throw "gofmt verification failed with exit code $LASTEXITCODE" }
     if ($unformatted.Count -gt 0) {
