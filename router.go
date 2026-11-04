@@ -62,7 +62,16 @@ func setupRouterWithStore(store albumStore) *gin.Engine {
 		"/albums/:id/", redirectTrailingSlash)
 
 	// Swagger JSON endpoint (used by Scalar)
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	serveSwagger := ginSwagger.WrapHandler(swaggerFiles.Handler)
+	router.GET("/swagger/*any", serveSwagger)
+	router.HEAD("/swagger/doc.json", omitResponseBody, func(c *gin.Context) {
+		// gin-swagger only accepts GET. Adapt a copy and retain HEAD for middleware.
+		original := c.Request
+		c.Request = original.Clone(original.Context())
+		c.Request.Method = http.MethodGet
+		defer func() { c.Request = original }()
+		serveSwagger(c)
+	})
 
 	// Scalar docs UI
 	serveDocs := func(c *gin.Context) {

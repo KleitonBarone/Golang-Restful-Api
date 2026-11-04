@@ -5,8 +5,9 @@
 Once the server is running, visit http://localhost:8080/docs for interactive API documentation powered by Scalar.
 When using a different listen address, open `/docs` at that address. Interactive
 requests use the same host and scheme as the documentation page.
-`HEAD /docs` returns the same status and content type as GET without a response
-body for link and uptime checks.
+`HEAD /docs` and `HEAD /swagger/doc.json` return the same status and content type
+as GET without a response body for link and uptime checks of the documentation
+page and its OpenAPI document.
 
 The documentation page loads Scalar 1.76.0 from jsDelivr. To update it, review
 the new release and change the exact version in `docs/scalar.html`. Keep the

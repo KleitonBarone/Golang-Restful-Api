@@ -49,6 +49,34 @@ func TestOpenAPIUsesServingOrigin(t *testing.T) {
 	}
 }
 
+func TestHeadOpenAPIDocument(t *testing.T) {
+	router := testRouter(t)
+	for _, path := range []string{"/swagger/doc.json", "/swagger/doc.json?source=uptime"} {
+		t.Run(path, func(t *testing.T) {
+			get := httptest.NewRecorder()
+			router.ServeHTTP(get, httptest.NewRequest(http.MethodGet, path, nil))
+			if get.Code != http.StatusOK || !json.Valid(get.Body.Bytes()) {
+				t.Fatalf("expected GET to serve the OpenAPI document, got status %d: %s", get.Code, get.Body.String())
+			}
+			head := httptest.NewRecorder()
+			request := httptest.NewRequest(http.MethodHead, path, nil)
+			router.ServeHTTP(head, request)
+			if head.Code != get.Code {
+				t.Errorf("expected GET status %d, got %d", get.Code, head.Code)
+			}
+			if got, want := head.Header().Get("Content-Type"), get.Header().Get("Content-Type"); got != want {
+				t.Errorf("expected GET content type %q, got %q", want, got)
+			}
+			if head.Body.Len() != 0 {
+				t.Errorf("expected no response body, got %q", head.Body.String())
+			}
+			if request.Method != http.MethodHead {
+				t.Errorf("expected original request method HEAD, got %q", request.Method)
+			}
+		})
+	}
+}
+
 func TestHeadDocs(t *testing.T) {
 	router := testRouter(t)
 	get := httptest.NewRecorder()

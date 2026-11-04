@@ -2,10 +2,12 @@
 
 ## Next
 
-- `HEAD /swagger/doc.json` supports link and uptime checks for the OpenAPI
-   document loaded by Scalar, matching GET metadata without a response body.
+No capabilities are currently scheduled.
 
 ## Completed
+
+- `HEAD /swagger/doc.json` supports link and uptime checks for the OpenAPI
+  document loaded by Scalar, matching GET metadata without a response body.
 
 - Canonical verification rejects stale Go module metadata without rewriting
   `go.mod` or `go.sum`, before running tests. Module files use LF line endings
