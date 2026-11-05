@@ -1,5 +1,9 @@
 # Golang Basic Restful Api
 
+A Go and Gin REST API for creating, listing, updating, and deleting albums.
+Albums live only in process memory. Each start loads three sample albums;
+created albums and changes to existing albums are lost when the process exits.
+
 ## API docs
 
 Once the server is running, visit http://localhost:8080/docs for interactive API documentation powered by Scalar.
@@ -31,6 +35,10 @@ go run .
 
 It listens on `localhost:8080` by default. Set `LISTEN_ADDRESS` to bind to a
 different address, such as `:9090`.
+
+To try the complete API, follow the [PowerShell album walkthrough](docs/album-workflow.md).
+It creates its own album, reads and updates it, inspects pagination metadata,
+and deletes it without changing the sample albums.
 
 Request logs use the connection peer's IP address. `X-Forwarded-For` and
 `X-Real-IP` headers are ignored because the service has no trusted-proxy

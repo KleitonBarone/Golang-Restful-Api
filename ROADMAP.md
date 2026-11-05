@@ -2,9 +2,14 @@
 
 ## Next
 
-No capabilities are currently scheduled.
+1. Run canonical verification on Windows in CI as well as Linux. The documented
+   Windows toolchain and LF requirements currently have no Windows CI job.
 
 ## Completed
+
+- A runnable PowerShell walkthrough covers creation, lookup, replacement,
+  partial updates, pagination totals, and deletion without changing sample
+  albums. The README explains that albums live in memory and reset on restart.
 
 - `HEAD /swagger/doc.json` supports link and uptime checks for the OpenAPI
   document loaded by Scalar, matching GET metadata without a response body.
