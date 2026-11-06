@@ -108,6 +108,9 @@ seconds to write its response. Request headers are limited to 16 KiB.
 
 ## Verification
 
+CI runs the complete verification on Ubuntu and Windows Server 2022. The Windows
+runner supplies MinGW-w64 for the race detector; both jobs use the script below.
+
 Run the same checks as CI before editing and against the final commit:
 
 ```text
