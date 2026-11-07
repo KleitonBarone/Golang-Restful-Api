@@ -13,6 +13,10 @@ requests use the same host and scheme as the documentation page.
 as GET without a response body for link and uptime checks of the documentation
 page and its OpenAPI document.
 
+`/swagger/doc.json` serves the checked-in generated JSON embedded in the binary.
+Scalar is the documentation UI; the service does not bundle or serve Swagger UI
+pages or assets under `/swagger/`.
+
 The documentation page loads Scalar 1.76.0 from jsDelivr. To update it, review
 the new release and change the exact version in `docs/scalar.html`. Keep the
 version pinned so CDN updates cannot change the UI independently of this repo.

@@ -2,15 +2,16 @@
 
 ## Next
 
-1. Serve the generated OpenAPI JSON directly for Scalar without bundling the
-   unused Swagger UI handler and assets. Preserve GET and HEAD document checks
-   and the serving-origin behavior while removing the unused UI dependencies.
-2. Run the documented album walkthrough against a temporary local server in CI
+1. Run the documented album walkthrough against a temporary local server in CI
    so its PowerShell commands and complete create-to-delete workflow stay usable.
-3. Report the actual listening address after binding, including the assigned port
+2. Report the actual listening address after binding, including the assigned port
    when `LISTEN_ADDRESS` requests port zero, so local clients can find the server.
 
 ## Completed
+
+- Scalar loads the generated OpenAPI JSON embedded directly in the binary.
+  GET and HEAD document checks retain serving-origin behavior without bundling
+  the unused Swagger UI handler, assets, or their two direct dependencies.
 
 - CI runs canonical verification on Ubuntu and Windows Server 2022, including
   module metadata, LF formatting, race tests, vet, build, and Swagger freshness.

@@ -34,9 +34,10 @@ func TestOpenAPIUsesServingOrigin(t *testing.T) {
 		t.Fatalf("expected status 200, got %d: %s", response.Code, response.Body.String())
 	}
 	var spec struct {
-		Host     string   `json:"host"`
-		Schemes  []string `json:"schemes"`
-		BasePath string   `json:"basePath"`
+		Host     string                                `json:"host"`
+		Schemes  []string                              `json:"schemes"`
+		BasePath string                                `json:"basePath"`
+		Paths    map[string]map[string]json.RawMessage `json:"paths"`
 	}
 	if err := json.Unmarshal(response.Body.Bytes(), &spec); err != nil {
 		t.Fatalf("decode OpenAPI document: %v", err)
@@ -46,6 +47,17 @@ func TestOpenAPIUsesServingOrigin(t *testing.T) {
 	}
 	if spec.BasePath != "/" {
 		t.Fatalf("expected API base path /, got %q", spec.BasePath)
+	}
+	for path, methods := range map[string][]string{
+		"/albums":      {"get", "head", "post"},
+		"/albums/{id}": {"get", "head", "put", "patch", "delete"},
+		"/health":      {"get", "head"},
+	} {
+		for _, method := range methods {
+			if len(spec.Paths[path][method]) == 0 {
+				t.Errorf("OpenAPI document is missing %s %s", method, path)
+			}
+		}
 	}
 }
 

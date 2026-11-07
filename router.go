@@ -6,15 +6,14 @@ import (
 	"net/url"
 	"strings"
 
-	_ "project/web-service/docs"
-
 	"github.com/gin-gonic/gin"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 //go:embed docs/scalar.html
 var scalarHTML []byte
+
+//go:embed docs/swagger.json
+var openAPIJSON []byte
 
 type healthResponse struct {
 	Status string `json:"status"`
@@ -61,17 +60,17 @@ func setupRouterWithStore(store albumStore) *gin.Engine {
 	router.Match([]string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodDelete},
 		"/albums/:id/", redirectTrailingSlash)
 
-	// Swagger JSON endpoint (used by Scalar)
-	serveSwagger := ginSwagger.WrapHandler(swaggerFiles.Handler)
-	router.GET("/swagger/*any", serveSwagger)
-	router.HEAD("/swagger/doc.json", omitResponseBody, func(c *gin.Context) {
-		// gin-swagger only accepts GET. Adapt a copy and retain HEAD for middleware.
-		original := c.Request
-		c.Request = original.Clone(original.Context())
-		c.Request.Method = http.MethodGet
-		defer func() { c.Request = original }()
-		serveSwagger(c)
-	})
+	// Scalar loads only the generated document; no Swagger UI assets are needed.
+	serveOpenAPI := func(c *gin.Context) {
+		c.Header("Content-Type", "application/json; charset=utf-8")
+		if c.Request.Method == http.MethodHead {
+			c.Status(http.StatusOK)
+			return
+		}
+		c.Data(http.StatusOK, "application/json; charset=utf-8", openAPIJSON)
+	}
+	router.GET("/swagger/doc.json", serveOpenAPI)
+	router.HEAD("/swagger/doc.json", serveOpenAPI)
 
 	// Scalar docs UI
 	serveDocs := func(c *gin.Context) {
