@@ -2,7 +2,13 @@
 
 ## Next
 
-No capabilities are scheduled.
+1. Serve the generated OpenAPI JSON directly for Scalar without bundling the
+   unused Swagger UI handler and assets. Preserve GET and HEAD document checks
+   and the serving-origin behavior while removing the unused UI dependencies.
+2. Run the documented album walkthrough against a temporary local server in CI
+   so its PowerShell commands and complete create-to-delete workflow stay usable.
+3. Report the actual listening address after binding, including the assigned port
+   when `LISTEN_ADDRESS` requests port zero, so local clients can find the server.
 
 ## Completed
 
