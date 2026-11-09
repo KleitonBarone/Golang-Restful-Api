@@ -2,12 +2,14 @@
 
 ## Next
 
-1. Run the documented album walkthrough against a temporary local server in CI
-   so its PowerShell commands and complete create-to-delete workflow stay usable.
-2. Report the actual listening address after binding, including the assigned port
+1. Report the actual listening address after binding, including the assigned port
    when `LISTEN_ADDRESS` requests port zero, so local clients can find the server.
 
 ## Completed
+
+- Canonical verification runs the documented PowerShell album walkthrough against
+  an isolated local HTTP server on both CI platforms. It checks each workflow
+  result and confirms that sample albums remain unchanged after deletion.
 
 - Scalar loads the generated OpenAPI JSON embedded directly in the binary.
   GET and HEAD document checks retain serving-origin behavior without bundling

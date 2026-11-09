@@ -127,3 +127,7 @@ checks Swagger output without rewriting files. If module metadata is stale, run
 on the reported paths and verify again.
 Windows requires a compatible MinGW-w64 compiler on PATH or
 under `~/.codex/tools/mingw64`; the script enables CGO in its own process.
+PowerShell 7 (`pwsh`) must be on PATH for Go tests. The suite runs the commands
+from the album walkthrough against a temporary local HTTP server, checking
+creation, lookup, replacement, partial updates, pagination, and deletion while
+confirming that sample albums remain unchanged.

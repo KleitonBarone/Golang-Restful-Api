@@ -3,6 +3,8 @@
 ## Toolchain
 
 - Use the Go version declared in `go.mod` or a compatible newer Go release.
+- Keep PowerShell 7 (`pwsh`) on PATH. The Go tests execute the documented album
+  walkthrough against an isolated local HTTP server.
 - Do not add a dependency unless the change clearly requires it and the standard
   library is insufficient.
 
