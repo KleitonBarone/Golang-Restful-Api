@@ -2,10 +2,13 @@
 
 ## Next
 
-1. Report the actual listening address after binding, including the assigned port
-   when `LISTEN_ADDRESS` requests port zero, so local clients can find the server.
+No capabilities are scheduled.
 
 ## Completed
+
+- The startup log reports the actual bound listening address, including the
+  assigned port when `LISTEN_ADDRESS` requests port zero, so local clients can
+  find the server.
 
 - Canonical verification runs the documented PowerShell album walkthrough against
   an isolated local HTTP server on both CI platforms. It checks each workflow

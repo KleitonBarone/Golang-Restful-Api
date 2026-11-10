@@ -7,10 +7,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -156,6 +158,33 @@ func TestNewHTTPServerBoundsConnectionWaits(t *testing.T) {
 	}
 	if got, want := server.IdleTimeout, 60*time.Second; got != want {
 		t.Fatalf("expected idle timeout %s, got %s", want, got)
+	}
+}
+
+func TestRunHTTPServerReportsBoundAddress(t *testing.T) {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer listener.Close()
+	address := listener.Addr().String()
+	_, port, err := net.SplitHostPort(address)
+	if err != nil || port == "0" {
+		t.Fatalf("expected an assigned port, got %q: %v", address, err)
+	}
+
+	var output bytes.Buffer
+	previous := log.Writer()
+	log.SetOutput(&output)
+	t.Cleanup(func() { log.SetOutput(previous) })
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if err := runHTTPServer(ctx, newHTTPServer(http.NotFoundHandler()), listener, time.Second); err != nil {
+		t.Fatal(err)
+	}
+	if want := "Listening on " + address; !strings.Contains(output.String(), want) {
+		t.Fatalf("expected startup log %q, got %q", want, output.String())
 	}
 }
 

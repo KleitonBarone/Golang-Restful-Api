@@ -38,7 +38,9 @@ go run .
 ```
 
 It listens on `localhost:8080` by default. Set `LISTEN_ADDRESS` to bind to a
-different address, such as `:9090`.
+different address, such as `:9090`. After binding, the startup log reports
+`Listening on <address>`. Use `127.0.0.1:0` to let the OS assign a free local
+port, then use the address from that log to reach the API and `/docs`.
 
 To try the complete API, follow the [PowerShell album walkthrough](docs/album-workflow.md).
 It creates its own album, reads and updates it, inspects pagination metadata,

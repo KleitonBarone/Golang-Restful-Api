@@ -54,6 +54,7 @@ func newHTTPServer(handler http.Handler) *http.Server {
 }
 
 func runHTTPServer(ctx context.Context, server *http.Server, listener net.Listener, timeout time.Duration) error {
+	log.Printf("Listening on %s", listener.Addr())
 	serveDone := make(chan error, 1)
 	go func() {
 		serveDone <- server.Serve(listener)
