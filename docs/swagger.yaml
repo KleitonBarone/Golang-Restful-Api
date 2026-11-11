@@ -4,18 +4,22 @@ definitions:
     properties:
       artist:
         description: Artist must contain at least one non-whitespace character.
+        example: Miles Davis
         minLength: 1
         type: string
       id:
         description: ID must contain at least one non-whitespace character. The values
           "." and ".." are reserved.
+        example: walkthrough-demo
         minLength: 1
         type: string
       price:
         description: Price must be greater than zero.
+        example: 29.99
         type: number
       title:
         description: Title must contain at least one non-whitespace character.
+        example: Kind of Blue
         minLength: 1
         type: string
     required:
@@ -29,14 +33,17 @@ definitions:
       artist:
         description: Artist, when supplied, must contain at least one non-whitespace
           character.
+        example: Miles Davis
         minLength: 1
         type: string
       price:
         description: Price, when supplied, must be greater than zero.
+        example: 24.99
         type: number
       title:
         description: Title, when supplied, must contain at least one non-whitespace
           character.
+        example: Kind of Blue (remastered)
         minLength: 1
         type: string
     type: object

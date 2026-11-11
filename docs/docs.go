@@ -453,21 +453,25 @@ const docTemplate = `{
                 "artist": {
                     "description": "Artist must contain at least one non-whitespace character.",
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "example": "Miles Davis"
                 },
                 "id": {
                     "description": "ID must contain at least one non-whitespace character. The values \".\" and \"..\" are reserved.",
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "example": "walkthrough-demo"
                 },
                 "price": {
                     "description": "Price must be greater than zero.",
-                    "type": "number"
+                    "type": "number",
+                    "example": 29.99
                 },
                 "title": {
                     "description": "Title must contain at least one non-whitespace character.",
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "example": "Kind of Blue"
                 }
             }
         },
@@ -477,16 +481,19 @@ const docTemplate = `{
                 "artist": {
                     "description": "Artist, when supplied, must contain at least one non-whitespace character.",
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "example": "Miles Davis"
                 },
                 "price": {
                     "description": "Price, when supplied, must be greater than zero.",
-                    "type": "number"
+                    "type": "number",
+                    "example": 24.99
                 },
                 "title": {
                     "description": "Title, when supplied, must contain at least one non-whitespace character.",
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "example": "Kind of Blue (remastered)"
                 }
             }
         },

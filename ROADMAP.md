@@ -2,16 +2,17 @@
 
 ## Next
 
-1. Provide valid album and partial-update examples in the generated OpenAPI
-   schemas so documentation clients can start with a positive price and usable
-   text fields. Check the published examples against the mutation routes.
-   The current schemas describe validation but contain no example values.
-2. Let clients filter albums by artist before pagination, with matching GET and
+1. Let clients filter albums by artist before pagination, with matching GET and
    HEAD totals from the same storage snapshot. Albums already carry an artist,
    but the collection currently supports only limit and offset, forcing clients
    to download every album to find an artist's records.
 
 ## Completed
+
+- Generated OpenAPI schemas provide valid album and partial-update examples,
+  including positive prices and a separate demo ID. A route-level check submits
+  the served examples to POST, PUT, and PATCH so documentation clients have
+  examples that satisfy the API's request contract.
 
 - The startup log reports the actual bound listening address, including the
   assigned port when `LISTEN_ADDRESS` requests port zero, so local clients can

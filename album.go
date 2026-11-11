@@ -11,23 +11,23 @@ import (
 // album represents data about a record album.
 type album struct {
 	// ID must contain at least one non-whitespace character. The values "." and ".." are reserved.
-	ID string `json:"id" validate:"required" minLength:"1"`
+	ID string `json:"id" validate:"required" minLength:"1" example:"walkthrough-demo"`
 	// Title must contain at least one non-whitespace character.
-	Title string `json:"title" validate:"required" minLength:"1"`
+	Title string `json:"title" validate:"required" minLength:"1" example:"Kind of Blue"`
 	// Artist must contain at least one non-whitespace character.
-	Artist string `json:"artist" validate:"required" minLength:"1"`
+	Artist string `json:"artist" validate:"required" minLength:"1" example:"Miles Davis"`
 	// Price must be greater than zero.
-	Price float64 `json:"price" validate:"required"`
+	Price float64 `json:"price" validate:"required" example:"29.99"`
 }
 
 // albumPatch contains the mutable album fields supplied by a PATCH request.
 type albumPatch struct {
 	// Title, when supplied, must contain at least one non-whitespace character.
-	Title *string `json:"title,omitempty" minLength:"1"`
+	Title *string `json:"title,omitempty" minLength:"1" example:"Kind of Blue (remastered)"`
 	// Artist, when supplied, must contain at least one non-whitespace character.
-	Artist *string `json:"artist,omitempty" minLength:"1"`
+	Artist *string `json:"artist,omitempty" minLength:"1" example:"Miles Davis"`
 	// Price, when supplied, must be greater than zero.
-	Price *float64 `json:"price,omitempty"`
+	Price *float64 `json:"price,omitempty" example:"24.99"`
 }
 
 // UnmarshalJSON rejects null fields, which would otherwise decode like omitted fields.
