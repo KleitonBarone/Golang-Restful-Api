@@ -2,7 +2,14 @@
 
 ## Next
 
-No capabilities are scheduled.
+1. Provide valid album and partial-update examples in the generated OpenAPI
+   schemas so documentation clients can start with a positive price and usable
+   text fields. Check the published examples against the mutation routes.
+   The current schemas describe validation but contain no example values.
+2. Let clients filter albums by artist before pagination, with matching GET and
+   HEAD totals from the same storage snapshot. Albums already carry an artist,
+   but the collection currently supports only limit and offset, forcing clients
+   to download every album to find an artist's records.
 
 ## Completed
 
