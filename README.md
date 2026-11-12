@@ -57,9 +57,14 @@ Trailing-slash redirects for `/health/` and `/docs/` ignore untrusted
 `X-Forwarded-Prefix` headers and preserve query strings. GET requests retain
 301 redirects, and HEAD requests use 307 redirects.
 
-`GET /albums` accepts `limit` and `offset` query parameters. Paginated
-responses include `X-Total-Count` with the collection size. Each pagination
-parameter can appear only once; repeated values return `400 Bad Request`.
+`GET /albums` accepts `artist`, `limit`, and `offset` query parameters.
+For example, `/albums?artist=John%20Coltrane&limit=1` returns that artist's
+first album. Artist matching is exact and case-sensitive, preserves spaces,
+and happens before pagination, retaining collection order. Encode literal plus
+signs as `%2B`. Blank or invalid UTF-8 artist values return `400 Bad Request`.
+Filtered or paginated responses include `X-Total-Count` with the number of
+matching albums before pagination. Each parameter can appear only once;
+repeated values return `400 Bad Request`.
 Malformed query strings, including invalid percent escapes and unescaped
 semicolon separators, also return `400 Bad Request`.
 An empty collection returns `[]`, including after deleting the last album.
@@ -67,8 +72,9 @@ Paginated requests for an empty collection include `X-Total-Count: 0`.
 
 `HEAD /albums` and `HEAD /albums/{id}` return the same status and content type
 as GET without a response body, including validation errors and missing albums.
-Paginated HEAD requests validate `limit` and `offset` and include `X-Total-Count`
-on success. Trailing-slash HEAD requests redirect with 307, preserving escaped
+Filtered or paginated HEAD requests validate the same parameters and include
+`X-Total-Count` on success without copying album payloads.
+Trailing-slash HEAD requests redirect with 307, preserving escaped
 IDs and query strings and ignoring `X-Forwarded-Prefix`.
 
 `POST /albums`, `PUT /albums/{id}`, and `PATCH /albums/{id}` require

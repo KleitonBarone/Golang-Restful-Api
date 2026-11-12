@@ -22,15 +22,16 @@ type albumHandler struct {
 	store albumStore
 }
 
-// getAlbums responds with the list of all albums as JSON.
-// @Summary List all albums
-// @Description Get all albums in the collection. Limit and offset can each be specified once.
+// getAlbums responds with albums matching the optional artist filter as JSON.
+// @Summary List albums
+// @Description Get albums in collection order, optionally filtered by an exact, case-sensitive artist match before pagination. Artist, limit, and offset can each be specified once. Artist must be non-blank valid UTF-8; spaces are preserved when matching.
 // @Tags albums
 // @Produce json
+// @Param artist query string false "Exact, case-sensitive artist name; non-blank valid UTF-8"
 // @Param limit query int false "Maximum number of albums to return" minimum(1)
 // @Param offset query int false "Number of albums to skip" minimum(0)
 // @Success 200 {array} album
-// @Header 200 {integer} X-Total-Count "Total number of albums when pagination is requested"
+// @Header 200 {integer} X-Total-Count "Number of matching albums before pagination, included when filtering or pagination is requested"
 // @Failure 400 {object} errorResponse
 // @Router /albums [get]
 // @Router /albums [head]
@@ -48,11 +49,19 @@ func (h albumHandler) getAlbums(c *gin.Context) {
 	if !ok {
 		return
 	}
+	artist, hasArtist, ok := singleQueryValue(c, query, "artist")
+	if !ok {
+		return
+	}
+	if hasArtist && (!utf8.ValidString(artist) || strings.TrimSpace(artist) == "") {
+		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: "artist must be non-blank valid UTF-8"})
+		return
+	}
 
 	// HEAD needs validated metadata, without copying or encoding album payloads.
 	if c.Request.Method == http.MethodHead {
-		if hasLimit || hasOffset {
-			c.Header("X-Total-Count", strconv.Itoa(h.store.count()))
+		if hasLimit || hasOffset || hasArtist {
+			c.Header("X-Total-Count", strconv.Itoa(h.store.count(artist)))
 		}
 		c.Header("Content-Type", "application/json; charset=utf-8")
 		c.Status(http.StatusOK)
@@ -60,11 +69,11 @@ func (h albumHandler) getAlbums(c *gin.Context) {
 	}
 
 	var albums []album
-	if !hasLimit && !hasOffset {
+	if !hasLimit && !hasOffset && !hasArtist {
 		albums = h.store.list()
 	} else {
 		var total int
-		albums, total = h.store.listPage(limit, offset)
+		albums, total = h.store.listPage(limit, offset, artist)
 		c.Header("X-Total-Count", strconv.Itoa(total))
 	}
 	if albums == nil {

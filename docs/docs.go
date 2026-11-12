@@ -17,15 +17,21 @@ const docTemplate = `{
     "paths": {
         "/albums": {
             "get": {
-                "description": "Get all albums in the collection. Limit and offset can each be specified once.",
+                "description": "Get albums in collection order, optionally filtered by an exact, case-sensitive artist match before pagination. Artist, limit, and offset can each be specified once. Artist must be non-blank valid UTF-8; spaces are preserved when matching.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "albums"
                 ],
-                "summary": "List all albums",
+                "summary": "List albums",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Exact, case-sensitive artist name; non-blank valid UTF-8",
+                        "name": "artist",
+                        "in": "query"
+                    },
                     {
                         "minimum": 1,
                         "type": "integer",
@@ -53,7 +59,7 @@ const docTemplate = `{
                         "headers": {
                             "X-Total-Count": {
                                 "type": "integer",
-                                "description": "Total number of albums when pagination is requested"
+                                "description": "Number of matching albums before pagination, included when filtering or pagination is requested"
                             }
                         }
                     },
@@ -128,15 +134,21 @@ const docTemplate = `{
                 }
             },
             "head": {
-                "description": "Get all albums in the collection. Limit and offset can each be specified once.",
+                "description": "Get albums in collection order, optionally filtered by an exact, case-sensitive artist match before pagination. Artist, limit, and offset can each be specified once. Artist must be non-blank valid UTF-8; spaces are preserved when matching.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "albums"
                 ],
-                "summary": "List all albums",
+                "summary": "List albums",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Exact, case-sensitive artist name; non-blank valid UTF-8",
+                        "name": "artist",
+                        "in": "query"
+                    },
                     {
                         "minimum": 1,
                         "type": "integer",
@@ -164,7 +176,7 @@ const docTemplate = `{
                         "headers": {
                             "X-Total-Count": {
                                 "type": "integer",
-                                "description": "Total number of albums when pagination is requested"
+                                "description": "Number of matching albums before pagination, included when filtering or pagination is requested"
                             }
                         }
                     },

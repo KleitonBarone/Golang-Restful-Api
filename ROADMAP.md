@@ -2,12 +2,14 @@
 
 ## Next
 
-1. Let clients filter albums by artist before pagination, with matching GET and
-   HEAD totals from the same storage snapshot. Albums already carry an artist,
-   but the collection currently supports only limit and offset, forcing clients
-   to download every album to find an artist's records.
+No capabilities are currently scheduled.
 
 ## Completed
+
+- Clients can filter albums by an exact, case-sensitive artist name before
+  pagination. GET pages and filtered totals share a locked storage snapshot;
+  HEAD returns matching totals without copying album payloads. README and
+  OpenAPI document matching and validation.
 
 - Generated OpenAPI schemas provide valid album and partial-update examples,
   including positive prices and a separate demo ID. A route-level check submits

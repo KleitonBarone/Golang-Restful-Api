@@ -11,6 +11,7 @@ type metadataOnlyAlbumStore struct {
 	stubAlbumStore
 	t          *testing.T
 	countCalls int
+	artist     string
 }
 
 func (s *metadataOnlyAlbumStore) list() []album {
@@ -18,13 +19,14 @@ func (s *metadataOnlyAlbumStore) list() []album {
 	return nil
 }
 
-func (s *metadataOnlyAlbumStore) listPage(limit, offset int) ([]album, int) {
+func (s *metadataOnlyAlbumStore) listPage(limit, offset int, artist string) ([]album, int) {
 	s.t.Fatal("HEAD must not read a page payload")
 	return nil, 0
 }
 
-func (s *metadataOnlyAlbumStore) count() int {
+func (s *metadataOnlyAlbumStore) count(artist string) int {
 	s.countCalls++
+	s.artist = artist
 	return 42
 }
 
@@ -34,11 +36,15 @@ func TestHeadAlbumsDoesNotReadAlbumPayloads(t *testing.T) {
 		status     int
 		total      string
 		countCalls int
+		artist     string
 	}{
 		{path: "/albums", status: http.StatusOK},
 		{path: "/albums?limit=1", status: http.StatusOK, total: "42", countCalls: 1},
 		{path: "/albums?offset=99", status: http.StatusOK, total: "42", countCalls: 1},
 		{path: "/albums?limit=2&offset=1", status: http.StatusOK, total: "42", countCalls: 1},
+		{path: "/albums?artist=John+Coltrane", status: http.StatusOK, total: "42", countCalls: 1, artist: "John Coltrane"},
+		{path: "/albums?artist=John+Coltrane&limit=1", status: http.StatusOK, total: "42", countCalls: 1, artist: "John Coltrane"},
+		{path: "/albums?artist=", status: http.StatusBadRequest},
 		{path: "/albums?limit=0", status: http.StatusBadRequest},
 		{path: "/albums?offset=-1", status: http.StatusBadRequest},
 		{path: "/albums?limit=1&limit=2", status: http.StatusBadRequest},
@@ -56,6 +62,9 @@ func TestHeadAlbumsDoesNotReadAlbumPayloads(t *testing.T) {
 			}
 			if store.countCalls != scenario.countCalls {
 				t.Fatalf("expected %d count calls, got %d", scenario.countCalls, store.countCalls)
+			}
+			if store.artist != scenario.artist {
+				t.Fatalf("expected count filter %q, got %q", scenario.artist, store.artist)
 			}
 		})
 	}

@@ -7,9 +7,10 @@ import (
 
 type albumStore interface {
 	list() []album
-	count() int
-	// listPage returns a detached page and total from one snapshot. Zero limit is unbounded; offset must be non-negative.
-	listPage(limit, offset int) ([]album, int)
+	// An empty artist disables filtering; otherwise the match is exact.
+	count(artist string) int
+	// listPage returns a detached filtered page and total from one snapshot. Zero limit is unbounded; offset must be non-negative.
+	listPage(limit, offset int, artist string) ([]album, int)
 	get(id string) (album, bool)
 	create(album) bool
 	update(id string, album album) (album, bool)
@@ -34,15 +35,38 @@ func (s *inMemoryAlbumStore) list() []album {
 	return append([]album(nil), s.albums...)
 }
 
-func (s *inMemoryAlbumStore) count() int {
+func (s *inMemoryAlbumStore) count(artist string) int {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	return len(s.albums)
+	if artist == "" {
+		return len(s.albums)
+	}
+	total := 0
+	for _, candidate := range s.albums {
+		if candidate.Artist == artist {
+			total++
+		}
+	}
+	return total
 }
 
-func (s *inMemoryAlbumStore) listPage(limit, offset int) ([]album, int) {
+func (s *inMemoryAlbumStore) listPage(limit, offset int, artist string) ([]album, int) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
+	if artist != "" {
+		var page []album
+		total := 0
+		for _, candidate := range s.albums {
+			if candidate.Artist != artist {
+				continue
+			}
+			if total >= offset && (limit == 0 || len(page) < limit) {
+				page = append(page, candidate)
+			}
+			total++
+		}
+		return page, total
+	}
 	total := len(s.albums)
 	if offset >= total {
 		return nil, total

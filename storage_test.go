@@ -54,20 +54,20 @@ func TestAlbumStorePageBounds(t *testing.T) {
 		{name: "maximum offset", limit: maxInt, offset: maxInt},
 	} {
 		t.Run(scenario.name, func(t *testing.T) {
-			page, total := newAlbumStore(albums).listPage(scenario.limit, scenario.offset)
+			page, total := newAlbumStore(albums).listPage(scenario.limit, scenario.offset, "")
 			if total != len(albums) || !slices.Equal(page, scenario.want) {
 				t.Fatalf("expected page %v and total %d, got %v and %d", scenario.want, len(albums), page, total)
 			}
 		})
 	}
-	if page, total := newAlbumStore(nil).listPage(1, 0); len(page) != 0 || total != 0 {
+	if page, total := newAlbumStore(nil).listPage(1, 0, ""); len(page) != 0 || total != 0 {
 		t.Fatalf("expected empty page and zero total, got %v and %d", page, total)
 	}
 }
 
 func TestAlbumStorePageIsDetached(t *testing.T) {
 	store := newAlbumStore(seedAlbums())
-	page, _ := store.listPage(1, 1)
+	page, _ := store.listPage(1, 1, "")
 	original := page[0]
 	page[0].Title = "Changed by caller"
 	if got, _ := store.get(original.ID); got != original {
@@ -88,15 +88,40 @@ func TestAlbumStorePageAndTotalShareSnapshot(t *testing.T) {
 	go func() {
 		defer writers.Done()
 		for range 1000 {
-			store.create(album{ID: "temporary"})
+			store.create(album{ID: "temporary", Artist: "Artist"})
 			store.delete("temporary")
 		}
 	}()
 	defer writers.Wait()
 	for range 1000 {
-		page, total := store.listPage(0, 0)
-		if len(page) != total {
-			t.Fatalf("page and total came from different snapshots: length %d, total %d", len(page), total)
+		for _, artist := range []string{"", "Artist"} {
+			page, total := store.listPage(0, 0, artist)
+			if len(page) != total {
+				t.Fatalf("page and total came from different snapshots: length %d, total %d", len(page), total)
+			}
 		}
+	}
+}
+
+func TestAlbumStoreFilteredPageIsDetached(t *testing.T) {
+	store := newAlbumStore(seedAlbums())
+	original := seedAlbums()[0]
+	page, total := store.listPage(1, 0, original.Artist)
+	if total != 1 || len(page) != 1 || page[0] != original {
+		t.Fatalf("expected matching album and total one, got %v and %d", page, total)
+	}
+	page[0].Title = "Changed by caller"
+	if got, _ := store.get(original.ID); got != original {
+		t.Fatalf("changing filtered page altered stored album: %v", got)
+	}
+	updated := original
+	updated.Artist = "Changed by store"
+	store.update(original.ID, updated)
+	if page[0].Artist != original.Artist {
+		t.Fatal("updating store altered a previously returned filtered page")
+	}
+	maxInt := int(^uint(0) >> 1)
+	if page, total := store.listPage(maxInt, maxInt, updated.Artist); len(page) != 0 || total != 1 {
+		t.Fatalf("expected empty page and matching total one, got %v and %d", page, total)
 	}
 }

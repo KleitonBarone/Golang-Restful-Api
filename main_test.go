@@ -312,11 +312,11 @@ func (s *stubAlbumStore) list() []album {
 	return append([]album(nil), s.albums...)
 }
 
-func (s *stubAlbumStore) count() int {
+func (s *stubAlbumStore) count(artist string) int {
 	return len(s.albums)
 }
 
-func (s *stubAlbumStore) listPage(limit, offset int) ([]album, int) {
+func (s *stubAlbumStore) listPage(limit, offset int, artist string) ([]album, int) {
 	albums := s.list()
 	total := len(albums)
 	if offset >= total {
@@ -606,7 +606,7 @@ func (s *pageOnlyAlbumStore) list() []album {
 	return nil
 }
 
-func (s *pageOnlyAlbumStore) listPage(limit, offset int) ([]album, int) {
+func (s *pageOnlyAlbumStore) listPage(limit, offset int, artist string) ([]album, int) {
 	s.limit, s.offset = limit, offset
 	return s.albums, 42
 }
