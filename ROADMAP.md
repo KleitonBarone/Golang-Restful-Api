@@ -2,7 +2,13 @@
 
 ## Next
 
-No capabilities are currently scheduled.
+1. Extend the runnable PowerShell walkthrough with artist-filtered discovery and
+   a HEAD count check, including safe query-value encoding. The current workflow
+   stops at unfiltered pagination despite the shipped artist filter. Keep the
+   existing live-server walkthrough test checking each added result.
+2. Give canonical Go test execution an explicit timeout shorter than CI's
+   ten-minute job limit, so a stalled concurrency or shutdown test reports Go's
+   goroutine diagnostics before the runner terminates verification.
 
 ## Completed
 
