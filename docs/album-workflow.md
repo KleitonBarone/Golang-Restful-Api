@@ -52,6 +52,20 @@ $page = Invoke-WebRequest "$base/albums?limit=2&offset=0"
 $page.Content | ConvertFrom-Json
 $page.Headers['X-Total-Count']
 
+# Find the album by its exact, case-sensitive artist name before pagination.
+# Encode the query value so spaces, literal plus signs, and other symbols survive.
+$artist = [uri]::EscapeDataString($album.artist)
+$filteredUrl = "$base/albums?artist=$artist&limit=1"
+$filtered = Invoke-WebRequest $filteredUrl
+$filtered.Content | ConvertFrom-Json
+$filtered.Headers['X-Total-Count']
+
+# HEAD returns the same matching total without an album response body.
+$matching = Invoke-WebRequest $filteredUrl -Method Head
+$matching.StatusCode
+$matching.Headers['X-Total-Count']
+$matching.RawContentLength
+
 # Delete the album. A successful deletion returns 204 with no body.
 $deleted = Invoke-WebRequest $albumUrl -Method Delete
 $deleted.StatusCode
@@ -61,6 +75,12 @@ $missing = Invoke-WebRequest $albumUrl -SkipHttpErrorCheck
 $missing.StatusCode
 $missing.Content | ConvertFrom-Json
 ```
+
+On a fresh server, the filtered page contains the updated demo album and has
+`X-Total-Count: 1`. The HEAD check returns status 200, the same total of 1, and
+a response body length of 0. Artist matching preserves spaces and is
+case-sensitive. The total counts matching albums before pagination, so it can
+exceed the page size if you add more albums by the same artist.
 
 The final response is 404 with `{"message":"album not found"}`. The sample
 albums remain available. Stop the server with Ctrl+C when finished.

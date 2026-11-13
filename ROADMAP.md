@@ -2,15 +2,16 @@
 
 ## Next
 
-1. Extend the runnable PowerShell walkthrough with artist-filtered discovery and
-   a HEAD count check, including safe query-value encoding. The current workflow
-   stops at unfiltered pagination despite the shipped artist filter. Keep the
-   existing live-server walkthrough test checking each added result.
-2. Give canonical Go test execution an explicit timeout shorter than CI's
+1. Give canonical Go test execution an explicit timeout shorter than CI's
    ten-minute job limit, so a stalled concurrency or shutdown test reports Go's
    goroutine diagnostics before the runner terminates verification.
 
 ## Completed
+
+- The runnable PowerShell walkthrough finds the updated demo album with an
+  encoded artist filter and checks its matching total with GET and HEAD.
+  Canonical verification executes these commands against a local server and
+  checks the filtered album, totals, HEAD status, and empty response body.
 
 - Clients can filter albums by an exact, case-sensitive artist name before
   pagination. GET pages and filtered totals share a locked storage snapshot;

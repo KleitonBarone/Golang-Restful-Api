@@ -60,8 +60,8 @@ func TestDocumentedAlbumWalkthrough(t *testing.T) {
 	if err := json.Unmarshal(output, &results); err != nil {
 		t.Fatalf("decode walkthrough output: %v\n%s", err, output)
 	}
-	if len(results) != 11 {
-		t.Fatalf("expected 11 walkthrough results, got %d: %s", len(results), output)
+	if len(results) != 16 {
+		t.Fatalf("expected 16 walkthrough results, got %d: %s", len(results), output)
 	}
 	created := album{ID: "walkthrough-demo", Title: "Kind of Blue", Artist: "Miles Davis", Price: 29.99}
 	replaced := created
@@ -75,7 +75,15 @@ func TestDocumentedAlbumWalkthrough(t *testing.T) {
 			t.Errorf("walkthrough album result %d: got %s, want %+v, decode error: %v", i+1, results[i+1], want, err)
 		}
 	}
-	for i, want := range map[int]string{0: `{"status":"ok"}`, 7: `"4"`, 8: `204`, 9: `404`, 10: `{"message":"album not found"}`} {
+	var filtered album
+	if err := json.Unmarshal(results[8], &filtered); err != nil || filtered != patched {
+		t.Errorf("filtered walkthrough album: got %s, want %+v, decode error: %v", results[8], patched, err)
+	}
+	for i, want := range map[int]string{
+		0: `{"status":"ok"}`, 7: `"4"`,
+		9: `"1"`, 10: `200`, 11: `"1"`, 12: `0`,
+		13: `204`, 14: `404`, 15: `{"message":"album not found"}`,
+	} {
 		if string(results[i]) != want {
 			t.Errorf("walkthrough result %d: got %s, want %s", i, results[i], want)
 		}
