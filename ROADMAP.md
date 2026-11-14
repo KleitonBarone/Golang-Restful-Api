@@ -2,11 +2,13 @@
 
 ## Next
 
-1. Give canonical Go test execution an explicit timeout shorter than CI's
-   ten-minute job limit, so a stalled concurrency or shutdown test reports Go's
-   goroutine diagnostics before the runner terminates verification.
+No capabilities are currently scheduled.
 
 ## Completed
+
+- Canonical Go race tests have a five-minute timeout, shorter than CI's
+  ten-minute job limit, so stalled tests report Go's goroutine diagnostics
+  before the runner terminates verification.
 
 - The runnable PowerShell walkthrough finds the updated demo album with an
   encoded artist filter and checks its matching total with GET and HEAD.

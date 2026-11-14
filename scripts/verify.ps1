@@ -23,7 +23,7 @@ try {
         $env:CC = $compiler
         $env:Path = "$(Split-Path $compiler -Parent)$([IO.Path]::PathSeparator)$env:Path"
     }
-    foreach ($arguments in @(@('test', '-race', './...'), @('vet', './...'), @('build', './...'))) {
+    foreach ($arguments in @(@('test', '-race', '-timeout', '5m', './...'), @('vet', './...'), @('build', './...'))) {
         & go @arguments
         if ($LASTEXITCODE -ne 0) { throw "go $($arguments -join ' ') failed with exit code $LASTEXITCODE" }
     }
