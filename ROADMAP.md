@@ -2,7 +2,10 @@
 
 ## Next
 
-No capabilities are currently scheduled.
+- OpenAPI document trailing-slash redirects preserve query strings and ignore
+  untrusted forwarding prefixes, matching the other documentation routes.
+- OpenAPI document clients can use conditional GET and HEAD requests to avoid
+  transferring the unchanged embedded specification during repeated checks.
 
 ## Completed
 
