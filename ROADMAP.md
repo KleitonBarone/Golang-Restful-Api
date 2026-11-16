@@ -2,12 +2,14 @@
 
 ## Next
 
-- OpenAPI document trailing-slash redirects preserve query strings and ignore
-  untrusted forwarding prefixes, matching the other documentation routes.
 - OpenAPI document clients can use conditional GET and HEAD requests to avoid
   transferring the unchanged embedded specification during repeated checks.
 
 ## Completed
+
+- OpenAPI document trailing-slash redirects preserve query strings and ignore
+  untrusted forwarding prefixes, matching the other documentation routes.
+  GET retains a 301 redirect and HEAD retains a 307 redirect without a body.
 
 - Canonical Go race tests have a five-minute timeout, shorter than CI's
   ten-minute job limit, so stalled tests report Go's goroutine diagnostics

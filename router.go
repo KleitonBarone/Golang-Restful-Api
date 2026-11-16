@@ -71,6 +71,7 @@ func setupRouterWithStore(store albumStore) *gin.Engine {
 	}
 	router.GET("/swagger/doc.json", serveOpenAPI)
 	router.HEAD("/swagger/doc.json", serveOpenAPI)
+	router.Match([]string{http.MethodGet, http.MethodHead}, "/swagger/doc.json/", redirectTrailingSlash)
 
 	// Scalar docs UI
 	serveDocs := func(c *gin.Context) {

@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestHealthAndDocsRedirectsIgnoreForwardedPrefix(t *testing.T) {
+func TestStaticRedirectsIgnoreForwardedPrefix(t *testing.T) {
 	router := testRouter(t)
 	for _, route := range []struct {
 		method string
@@ -17,6 +17,8 @@ func TestHealthAndDocsRedirectsIgnoreForwardedPrefix(t *testing.T) {
 		{http.MethodHead, "/health", http.StatusTemporaryRedirect},
 		{http.MethodGet, "/docs", http.StatusMovedPermanently},
 		{http.MethodHead, "/docs", http.StatusTemporaryRedirect},
+		{http.MethodGet, "/swagger/doc.json", http.StatusMovedPermanently},
+		{http.MethodHead, "/swagger/doc.json", http.StatusTemporaryRedirect},
 	} {
 		for _, prefix := range []string{"", "/untrusted"} {
 			t.Run(route.method+route.path+"/prefix="+prefix, func(t *testing.T) {
