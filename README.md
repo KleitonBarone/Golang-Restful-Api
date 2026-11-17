@@ -14,6 +14,10 @@ as GET without a response body for link and uptime checks of the documentation
 page and its OpenAPI document.
 
 `/swagger/doc.json` serves the checked-in generated JSON embedded in the binary.
+GET and HEAD responses include a content-derived `ETag` that stays the same
+across restarts while the document is unchanged. Send it in `If-None-Match` on
+subsequent requests to receive `304 Not Modified` without a response body when
+it still matches. A stale tag returns `200`, with the document body for GET.
 Scalar is the documentation UI; the service does not bundle or serve Swagger UI
 pages or assets under `/swagger/`.
 

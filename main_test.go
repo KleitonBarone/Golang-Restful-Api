@@ -91,6 +91,57 @@ func TestHeadOpenAPIDocument(t *testing.T) {
 	}
 }
 
+func TestConditionalOpenAPIDocument(t *testing.T) {
+	router := testRouter(t)
+	get := httptest.NewRecorder()
+	router.ServeHTTP(get, httptest.NewRequest(http.MethodGet, "/swagger/doc.json", nil))
+	etag := get.Header().Get("ETag")
+	if len(etag) < 2 || !strings.HasPrefix(etag, `"`) || !strings.HasSuffix(etag, `"`) {
+		t.Fatalf("expected a strong quoted ETag, got %q", etag)
+	}
+	if get.Code != http.StatusOK || !bytes.Equal(get.Body.Bytes(), openAPIJSON) {
+		t.Fatalf("expected the embedded document, got status %d: %s", get.Code, get.Body.String())
+	}
+	for _, method := range []string{http.MethodGet, http.MethodHead} {
+		for _, tc := range []struct {
+			name      string
+			validator string
+			status    int
+		}{
+			{"unconditional", "", http.StatusOK},
+			{"matching", etag, http.StatusNotModified},
+			{"weak matching", "W/" + etag, http.StatusNotModified},
+			{"list matching", `"older", W/` + etag + `, "other"`, http.StatusNotModified},
+			{"wildcard", "*", http.StatusNotModified},
+			{"stale", `"older"`, http.StatusOK},
+			{"malformed", "invalid", http.StatusOK},
+		} {
+			t.Run(method+"/"+tc.name, func(t *testing.T) {
+				request := httptest.NewRequest(method, "/swagger/doc.json?source=cache", nil)
+				request.Header.Set("If-None-Match", tc.validator)
+				response := httptest.NewRecorder()
+				router.ServeHTTP(response, request)
+				if response.Code != tc.status {
+					t.Fatalf("expected status %d, got %d: %s", tc.status, response.Code, response.Body.String())
+				}
+				if got := response.Header().Get("ETag"); got != etag {
+					t.Errorf("expected stable ETag %q, got %q", etag, got)
+				}
+				if method == http.MethodHead || tc.status == http.StatusNotModified {
+					if response.Body.Len() != 0 {
+						t.Errorf("expected no response body, got %q", response.Body.String())
+					}
+				} else if !bytes.Equal(response.Body.Bytes(), get.Body.Bytes()) {
+					t.Error("expected the unchanged document body")
+				}
+				if tc.status == http.StatusOK && response.Header().Get("Content-Type") != get.Header().Get("Content-Type") {
+					t.Error("expected the document content type")
+				}
+			})
+		}
+	}
+}
+
 func TestHeadDocs(t *testing.T) {
 	router := testRouter(t)
 	get := httptest.NewRecorder()

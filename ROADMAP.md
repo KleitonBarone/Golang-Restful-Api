@@ -2,10 +2,13 @@
 
 ## Next
 
-- OpenAPI document clients can use conditional GET and HEAD requests to avoid
-  transferring the unchanged embedded specification during repeated checks.
+- No capabilities are currently scheduled.
 
 ## Completed
+
+- OpenAPI document GET and HEAD responses include a content-derived ETag.
+  Matching conditional requests return 304 without a body, including weak tags,
+  tag lists, and wildcards, while stale tags retain the normal response.
 
 - OpenAPI document trailing-slash redirects preserve query strings and ignore
   untrusted forwarding prefixes, matching the other documentation routes.

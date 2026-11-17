@@ -1,10 +1,14 @@
 package main
 
 import (
+	"bytes"
+	"crypto/sha256"
 	_ "embed"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -61,13 +65,13 @@ func setupRouterWithStore(store albumStore) *gin.Engine {
 		"/albums/:id/", redirectTrailingSlash)
 
 	// Scalar loads only the generated document; no Swagger UI assets are needed.
+	openAPIETag := fmt.Sprintf(`"%x"`, sha256.Sum256(openAPIJSON))
 	serveOpenAPI := func(c *gin.Context) {
 		c.Header("Content-Type", "application/json; charset=utf-8")
-		if c.Request.Method == http.MethodHead {
-			c.Status(http.StatusOK)
-			return
-		}
-		c.Data(http.StatusOK, "application/json; charset=utf-8", openAPIJSON)
+		c.Header("ETag", openAPIETag)
+		// The embedded document has no modification time. Its content hash remains
+		// stable across restarts, while ServeContent handles HTTP preconditions.
+		http.ServeContent(c.Writer, c.Request, "doc.json", time.Time{}, bytes.NewReader(openAPIJSON))
 	}
 	router.GET("/swagger/doc.json", serveOpenAPI)
 	router.HEAD("/swagger/doc.json", serveOpenAPI)
