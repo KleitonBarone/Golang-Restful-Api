@@ -2,7 +2,13 @@
 
 ## Next
 
-- No capabilities are currently scheduled.
+1. Return a relative next-page `Link` on limited album GET and HEAD requests
+   when the storage snapshot contains more matching albums. Preserve the artist
+   filter and page size so clients can follow pages without computing offsets
+   from `X-Total-Count` themselves.
+2. Provide a runnable conditional OpenAPI document example that captures an
+   ETag and revalidates with GET and HEAD. Execute the published commands in
+   canonical verification so clients can reproduce the existing 304 workflow.
 
 ## Completed
 
