@@ -57,6 +57,10 @@ const docTemplate = `{
                             }
                         },
                         "headers": {
+                            "Link": {
+                                "type": "string",
+                                "description": "Relative next-page URL with rel=next, included when a limited page has more matching albums"
+                            },
                             "X-Total-Count": {
                                 "type": "integer",
                                 "description": "Number of matching albums before pagination, included when filtering or pagination is requested"
@@ -174,6 +178,10 @@ const docTemplate = `{
                             }
                         },
                         "headers": {
+                            "Link": {
+                                "type": "string",
+                                "description": "Relative next-page URL with rel=next, included when a limited page has more matching albums"
+                            },
                             "X-Total-Count": {
                                 "type": "integer",
                                 "description": "Number of matching albums before pagination, included when filtering or pagination is requested"

@@ -74,6 +74,13 @@ semicolon separators, also return `400 Bad Request`.
 An empty collection returns `[]`, including after deleting the last album.
 Paginated requests for an empty collection include `X-Total-Count: 0`.
 
+When a request includes `limit` and more matching albums remain, GET and HEAD
+also return a relative next-page `Link`, for example
+`</albums?limit=1&offset=1>; rel="next"`. Follow that URL to keep the same page
+size and artist filter. The final page, an offset beyond the matches, and
+requests without `limit` omit the link. Totals and links describe the current
+request's snapshot; mutations between page requests can change the collection.
+
 `HEAD /albums` and `HEAD /albums/{id}` return the same status and content type
 as GET without a response body, including validation errors and missing albums.
 Filtered or paginated HEAD requests validate the same parameters and include

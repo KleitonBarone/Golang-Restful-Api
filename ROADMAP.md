@@ -2,15 +2,16 @@
 
 ## Next
 
-1. Return a relative next-page `Link` on limited album GET and HEAD requests
-   when the storage snapshot contains more matching albums. Preserve the artist
-   filter and page size so clients can follow pages without computing offsets
-   from `X-Total-Count` themselves.
-2. Provide a runnable conditional OpenAPI document example that captures an
+1. Provide a runnable conditional OpenAPI document example that captures an
    ETag and revalidates with GET and HEAD. Execute the published commands in
    canonical verification so clients can reproduce the existing 304 workflow.
 
 ## Completed
+
+- Limited album GET and HEAD responses include a relative next-page `Link`
+  when more matching albums remain in the request's storage snapshot. Links
+  preserve the artist filter and page size, and stop at the final page without
+  overflowing large offsets or limits.
 
 - OpenAPI document GET and HEAD responses include a content-derived ETag.
   Matching conditional requests return 304 without a body, including weak tags,

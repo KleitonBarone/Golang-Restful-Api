@@ -32,6 +32,7 @@ type albumHandler struct {
 // @Param offset query int false "Number of albums to skip" minimum(0)
 // @Success 200 {array} album
 // @Header 200 {integer} X-Total-Count "Number of matching albums before pagination, included when filtering or pagination is requested"
+// @Header 200 {string} Link "Relative next-page URL with rel=next, included when a limited page has more matching albums"
 // @Failure 400 {object} errorResponse
 // @Router /albums [get]
 // @Router /albums [head]
@@ -61,7 +62,7 @@ func (h albumHandler) getAlbums(c *gin.Context) {
 	// HEAD needs validated metadata, without copying or encoding album payloads.
 	if c.Request.Method == http.MethodHead {
 		if hasLimit || hasOffset || hasArtist {
-			c.Header("X-Total-Count", strconv.Itoa(h.store.count(artist)))
+			setAlbumPageHeaders(c, query, limit, offset, h.store.count(artist))
 		}
 		c.Header("Content-Type", "application/json; charset=utf-8")
 		c.Status(http.StatusOK)
@@ -74,12 +75,22 @@ func (h albumHandler) getAlbums(c *gin.Context) {
 	} else {
 		var total int
 		albums, total = h.store.listPage(limit, offset, artist)
-		c.Header("X-Total-Count", strconv.Itoa(total))
+		setAlbumPageHeaders(c, query, limit, offset, total)
 	}
 	if albums == nil {
 		albums = []album{}
 	}
 	c.IndentedJSON(http.StatusOK, albums)
+}
+
+// setAlbumPageHeaders uses the page's snapshot total and already validated query.
+func setAlbumPageHeaders(c *gin.Context, query url.Values, limit, offset, total int) {
+	c.Header("X-Total-Count", strconv.Itoa(total))
+	// Subtract before adding so even the largest accepted integers cannot overflow.
+	if limit > 0 && offset < total && limit < total-offset {
+		query.Set("offset", strconv.Itoa(offset+limit))
+		c.Header("Link", "</albums?"+query.Encode()+">; rel=\"next\"")
+	}
 }
 
 func positiveQueryInt(c *gin.Context, query url.Values, name string) (int, bool, bool) {
