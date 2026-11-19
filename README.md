@@ -18,6 +18,8 @@ GET and HEAD responses include a content-derived `ETag` that stays the same
 across restarts while the document is unchanged. Send it in `If-None-Match` on
 subsequent requests to receive `304 Not Modified` without a response body when
 it still matches. A stale tag returns `200`, with the document body for GET.
+Run the [PowerShell OpenAPI walkthrough](docs/openapi-workflow.md) to capture
+the tag, revalidate with GET and HEAD, and inspect a stale-tag response.
 Scalar is the documentation UI; the service does not bundle or serve Swagger UI
 pages or assets under `/swagger/`.
 
@@ -150,3 +152,5 @@ PowerShell 7 (`pwsh`) must be on PATH for Go tests. The suite runs the commands
 from the album walkthrough against a temporary local HTTP server, checking
 creation, lookup, replacement, partial updates, pagination, and deletion while
 confirming that sample albums remain unchanged.
+It also executes the OpenAPI walkthrough, checking ETags, matching GET and HEAD
+responses with status 304 and no body, and a stale-tag response with status 200.

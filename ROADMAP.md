@@ -2,11 +2,13 @@
 
 ## Next
 
-1. Provide a runnable conditional OpenAPI document example that captures an
-   ETag and revalidates with GET and HEAD. Execute the published commands in
-   canonical verification so clients can reproduce the existing 304 workflow.
+No capabilities are currently scheduled.
 
 ## Completed
+
+- A runnable PowerShell OpenAPI walkthrough captures an ETag, revalidates with
+  GET and HEAD, and demonstrates a stale-tag response. Canonical verification
+  executes the published commands and checks statuses, tags, and body lengths.
 
 - Limited album GET and HEAD responses include a relative next-page `Link`
   when more matching albums remain in the request's storage snapshot. Links
