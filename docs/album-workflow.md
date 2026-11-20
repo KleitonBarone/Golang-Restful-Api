@@ -52,6 +52,21 @@ $page = Invoke-WebRequest "$base/albums?limit=2&offset=0"
 $page.Content | ConvertFrom-Json
 $page.Headers['X-Total-Count']
 
+# Follow the server's next-page links instead of calculating offsets.
+# PowerShell resolves relative Link targets against the response URL.
+$allAlbums = @($page.Content | ConvertFrom-Json)
+$pagesRead = 1
+while ($page.RelationLink.ContainsKey('next')) {
+    $page = Invoke-WebRequest $page.RelationLink['next']
+    $allAlbums += @($page.Content | ConvertFrom-Json)
+    $pagesRead++
+}
+[pscustomobject]@{
+    PagesRead = $pagesRead
+    Albums = $allAlbums
+    HasNext = $page.RelationLink.ContainsKey('next')
+}
+
 # Find the album by its exact, case-sensitive artist name before pagination.
 # Encode the query value so spaces, literal plus signs, and other symbols survive.
 $artist = [uri]::EscapeDataString($album.artist)
@@ -76,7 +91,12 @@ $missing.StatusCode
 $missing.Content | ConvertFrom-Json
 ```
 
-On a fresh server, the filtered page contains the updated demo album and has
+On a fresh server, traversal reads two pages and returns the three sample albums
+followed by the updated demo album, once each. The final page has no next link,
+so `HasNext` is false. Links and totals describe each request's snapshot;
+concurrent mutations can change the collection between requests.
+
+The filtered page contains the updated demo album and has
 `X-Total-Count: 1`. The HEAD check returns status 200, the same total of 1, and
 a response body length of 0. Artist matching preserves spaces and is
 case-sensitive. The total counts matching albums before pagination, so it can

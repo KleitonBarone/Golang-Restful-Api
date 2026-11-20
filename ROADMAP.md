@@ -2,14 +2,16 @@
 
 ## Next
 
-1. Extend the runnable PowerShell album walkthrough to follow the API's
-   next-page links through the final page. Verify that traversal returns each
-   album once in collection order and leaves sample albums unchanged.
-2. Support content-derived ETags and conditional GET and HEAD requests for
+1. Support content-derived ETags and conditional GET and HEAD requests for
    the embedded `/docs` HTML, reusing the OpenAPI document's standard-library
    serving approach so unchanged documentation need not be downloaded again.
 
 ## Completed
+
+- The runnable PowerShell album walkthrough follows next-page links to the
+  final page. Canonical verification checks that traversal returns every album
+  once in collection order, terminates without a next link, and leaves sample
+  albums unchanged.
 
 - A runnable PowerShell OpenAPI walkthrough captures an ETag, revalidates with
   GET and HEAD, and demonstrates a stale-tag response. Canonical verification

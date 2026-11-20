@@ -49,8 +49,8 @@ different address, such as `:9090`. After binding, the startup log reports
 port, then use the address from that log to reach the API and `/docs`.
 
 To try the complete API, follow the [PowerShell album walkthrough](docs/album-workflow.md).
-It creates its own album, reads and updates it, inspects pagination metadata,
-and deletes it without changing the sample albums.
+It creates its own album, reads and updates it, follows next-page links to the
+end of the collection, and deletes it without changing the sample albums.
 
 Request logs use the connection peer's IP address. `X-Forwarded-For` and
 `X-Real-IP` headers are ignored because the service has no trusted-proxy

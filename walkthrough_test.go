@@ -22,8 +22,8 @@ func TestDocumentedAlbumWalkthrough(t *testing.T) {
 	server := httptest.NewServer(setupRouterWithStore(store))
 	defer server.Close()
 	results := runDocumentedWalkthrough(t, "docs/album-workflow.md", server.URL)
-	if len(results) != 16 {
-		t.Fatalf("expected 16 walkthrough results, got %d: %s", len(results), results)
+	if len(results) != 17 {
+		t.Fatalf("expected 17 walkthrough results, got %d: %s", len(results), results)
 	}
 	created := album{ID: "walkthrough-demo", Title: "Kind of Blue", Artist: "Miles Davis", Price: 29.99}
 	replaced := created
@@ -37,14 +37,25 @@ func TestDocumentedAlbumWalkthrough(t *testing.T) {
 			t.Errorf("walkthrough album result %d: got %s, want %+v, decode error: %v", i+1, results[i+1], want, err)
 		}
 	}
+	var traversal struct {
+		PagesRead int
+		Albums    []album
+		HasNext   bool
+	}
+	if err := json.Unmarshal(results[8], &traversal); err != nil {
+		t.Fatalf("decode pagination traversal: %v", err)
+	}
+	if traversal.PagesRead != 2 || traversal.HasNext || !reflect.DeepEqual(traversal.Albums, append(seedAlbums(), patched)) {
+		t.Errorf("walkthrough traversal must return each album once and stop after two pages: %+v", traversal)
+	}
 	var filtered album
-	if err := json.Unmarshal(results[8], &filtered); err != nil || filtered != patched {
-		t.Errorf("filtered walkthrough album: got %s, want %+v, decode error: %v", results[8], patched, err)
+	if err := json.Unmarshal(results[9], &filtered); err != nil || filtered != patched {
+		t.Errorf("filtered walkthrough album: got %s, want %+v, decode error: %v", results[9], patched, err)
 	}
 	for i, want := range map[int]string{
 		0: `{"status":"ok"}`, 7: `"4"`,
-		9: `"1"`, 10: `200`, 11: `"1"`, 12: `0`,
-		13: `204`, 14: `404`, 15: `{"message":"album not found"}`,
+		10: `"1"`, 11: `200`, 12: `"1"`, 13: `0`,
+		14: `204`, 15: `404`, 16: `{"message":"album not found"}`,
 	} {
 		if string(results[i]) != want {
 			t.Errorf("walkthrough result %d: got %s, want %s", i, results[i], want)
