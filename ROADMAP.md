@@ -2,11 +2,14 @@
 
 ## Next
 
-1. Support content-derived ETags and conditional GET and HEAD requests for
-   the embedded `/docs` HTML, reusing the OpenAPI document's standard-library
-   serving approach so unchanged documentation need not be downloaded again.
+No capabilities are currently scheduled.
 
 ## Completed
+
+- The embedded `/docs` HTML includes a content-derived ETag and supports
+  conditional GET and HEAD requests through the standard-library content
+  server. Matching tags return 304 without a body, while stale tags retain
+  the normal response.
 
 - The runnable PowerShell album walkthrough follows next-page links to the
   final page. Canonical verification checks that traversal returns every album

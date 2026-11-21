@@ -14,8 +14,9 @@ as GET without a response body for link and uptime checks of the documentation
 page and its OpenAPI document.
 
 `/swagger/doc.json` serves the checked-in generated JSON embedded in the binary.
-GET and HEAD responses include a content-derived `ETag` that stays the same
-across restarts while the document is unchanged. Send it in `If-None-Match` on
+Both `/docs` and `/swagger/doc.json` include a content-derived `ETag` in GET
+and HEAD responses. Each tag stays the same across restarts while its embedded
+content is unchanged. Send it in `If-None-Match` on
 subsequent requests to receive `304 Not Modified` without a response body when
 it still matches. A stale tag returns `200`, with the document body for GET.
 Run the [PowerShell OpenAPI walkthrough](docs/openapi-workflow.md) to capture

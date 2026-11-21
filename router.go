@@ -78,11 +78,14 @@ func setupRouterWithStore(store albumStore) *gin.Engine {
 	router.Match([]string{http.MethodGet, http.MethodHead}, "/swagger/doc.json/", redirectTrailingSlash)
 
 	// Scalar docs UI
+	docsETag := fmt.Sprintf(`"%x"`, sha256.Sum256(scalarHTML))
 	serveDocs := func(c *gin.Context) {
-		c.Data(http.StatusOK, "text/html; charset=utf-8", scalarHTML)
+		c.Header("Content-Type", "text/html; charset=utf-8")
+		c.Header("ETag", docsETag)
+		http.ServeContent(c.Writer, c.Request, "scalar.html", time.Time{}, bytes.NewReader(scalarHTML))
 	}
 	router.GET("/docs", serveDocs)
-	router.HEAD("/docs", omitResponseBody, serveDocs)
+	router.HEAD("/docs", serveDocs)
 	router.Match([]string{http.MethodGet, http.MethodHead}, "/docs/", redirectTrailingSlash)
 
 	return router
