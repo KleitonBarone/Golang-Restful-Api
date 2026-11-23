@@ -27,7 +27,7 @@ try {
         & go @arguments
         if ($LASTEXITCODE -ne 0) { throw "go $($arguments -join ' ') failed with exit code $LASTEXITCODE" }
     }
-    & go run github.com/swaggo/swag/cmd/swag@v1.16.6 init -g router.go -o $generatedRoot --packageName docs
+    & go run github.com/swaggo/swag/cmd/swag@v1.16.6 init --parseFuncBody -g router.go -o $generatedRoot --packageName docs
     if ($LASTEXITCODE -ne 0) { throw 'Swagger generation failed' }
     foreach ($name in @('docs.go', 'swagger.json', 'swagger.yaml')) {
         $expected = [IO.File]::ReadAllText((Join-Path $generatedRoot $name)).Replace("`r`n", "`n")

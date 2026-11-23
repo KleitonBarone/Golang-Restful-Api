@@ -2,14 +2,16 @@
 
 ## Next
 
-1. Describe album and readiness HEAD responses as bodyless in the served
-   OpenAPI document while retaining their status codes and response headers.
-2. Use one storage method for album collection GETs, including unfiltered
+1. Use one storage method for album collection GETs, including unfiltered
    requests, so stores implement one read contract for collection payloads.
-3. Make the album walkthrough rerunnable after an interrupted run by generating
+2. Make the album walkthrough rerunnable after an interrupted run by generating
    an unused demo ID for each invocation.
 
 ## Completed
+
+- The served OpenAPI document describes album and readiness HEAD responses as
+  bodyless, including album lookup and query errors. Collection HEAD operations
+  still document their pagination headers.
 
 - The embedded `/docs` HTML includes a content-derived ETag and supports
   conditional GET and HEAD requests through the standard-library content

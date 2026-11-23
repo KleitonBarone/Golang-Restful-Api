@@ -33,7 +33,7 @@ version pinned so CDN updates cannot change the UI independently of this repo.
 After modifying Swagger annotations in the Go source files, regenerate the spec:
 
 ```
-go run github.com/swaggo/swag/cmd/swag@v1.16.6 init -g router.go
+go run github.com/swaggo/swag/cmd/swag@v1.16.6 init --parseFuncBody -g router.go
 ```
 
 ## Getting Started

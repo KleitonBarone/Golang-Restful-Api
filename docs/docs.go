@@ -138,14 +138,11 @@ const docTemplate = `{
                 }
             },
             "head": {
-                "description": "Get albums in collection order, optionally filtered by an exact, case-sensitive artist match before pagination. Artist, limit, and offset can each be specified once. Artist must be non-blank valid UTF-8; spaces are preserved when matching.",
-                "produces": [
-                    "application/json"
-                ],
+                "description": "Return collection metadata without a response body. Artist, limit, and offset can each be specified once. Artist must be non-blank valid UTF-8; spaces are preserved when matching.",
                 "tags": [
                     "albums"
                 ],
-                "summary": "List albums",
+                "summary": "Check album collection metadata",
                 "parameters": [
                     {
                         "type": "string",
@@ -170,13 +167,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/main.album"
-                            }
-                        },
+                        "description": "Collection metadata",
                         "headers": {
                             "Link": {
                                 "type": "string",
@@ -189,10 +180,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/main.errorResponse"
-                        }
+                        "description": "Invalid query"
                     }
                 }
             }
@@ -325,14 +313,11 @@ const docTemplate = `{
                 }
             },
             "head": {
-                "description": "Get a single album by its ID",
-                "produces": [
-                    "application/json"
-                ],
+                "description": "Return the album lookup status without a response body.",
                 "tags": [
                     "albums"
                 ],
-                "summary": "Get an album by ID",
+                "summary": "Check whether an album exists",
                 "parameters": [
                     {
                         "type": "string",
@@ -344,16 +329,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/main.album"
-                        }
+                        "description": "Album found"
                     },
                     "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/main.errorResponse"
-                        }
+                        "description": "Album not found"
                     }
                 }
             },
@@ -441,20 +420,14 @@ const docTemplate = `{
                 }
             },
             "head": {
-                "description": "Report whether the service process is ready to handle requests",
-                "produces": [
-                    "application/json"
-                ],
+                "description": "Return the service readiness status without a response body.",
                 "tags": [
                     "health"
                 ],
                 "summary": "Check service health",
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/main.healthResponse"
-                        }
+                        "description": "Service ready"
                     }
                 }
             }

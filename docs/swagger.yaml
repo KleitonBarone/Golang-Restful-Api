@@ -110,10 +110,9 @@ paths:
       tags:
       - albums
     head:
-      description: Get albums in collection order, optionally filtered by an exact,
-        case-sensitive artist match before pagination. Artist, limit, and offset can
-        each be specified once. Artist must be non-blank valid UTF-8; spaces are preserved
-        when matching.
+      description: Return collection metadata without a response body. Artist, limit,
+        and offset can each be specified once. Artist must be non-blank valid UTF-8;
+        spaces are preserved when matching.
       parameters:
       - description: Exact, case-sensitive artist name; non-blank valid UTF-8
         in: query
@@ -129,11 +128,9 @@ paths:
         minimum: 0
         name: offset
         type: integer
-      produces:
-      - application/json
       responses:
         "200":
-          description: OK
+          description: Collection metadata
           headers:
             Link:
               description: Relative next-page URL with rel=next, included when a limited
@@ -143,15 +140,9 @@ paths:
               description: Number of matching albums before pagination, included when
                 filtering or pagination is requested
               type: integer
-          schema:
-            items:
-              $ref: '#/definitions/main.album'
-            type: array
         "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/main.errorResponse'
-      summary: List albums
+          description: Invalid query
+      summary: Check album collection metadata
       tags:
       - albums
     post:
@@ -243,25 +234,19 @@ paths:
       tags:
       - albums
     head:
-      description: Get a single album by its ID
+      description: Return the album lookup status without a response body.
       parameters:
       - description: Album ID
         in: path
         name: id
         required: true
         type: string
-      produces:
-      - application/json
       responses:
         "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/main.album'
+          description: Album found
         "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/main.errorResponse'
-      summary: Get an album by ID
+          description: Album not found
+      summary: Check whether an album exists
       tags:
       - albums
     patch:
@@ -370,14 +355,10 @@ paths:
       tags:
       - health
     head:
-      description: Report whether the service process is ready to handle requests
-      produces:
-      - application/json
+      description: Return the service readiness status without a response body.
       responses:
         "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/main.healthResponse'
+          description: Service ready
       summary: Check service health
       tags:
       - health

@@ -50,11 +50,37 @@ func setupRouterWithStore(store albumStore) *gin.Engine {
 	handler := albumHandler{store: store}
 
 	router.GET("/health", getHealth)
+
+	// @Summary Check service health
+	// @Description Return the service readiness status without a response body.
+	// @Tags health
+	// @Success 200 "Service ready"
+	// @Router /health [head]
 	router.HEAD("/health", getHealth)
 	router.Match([]string{http.MethodGet, http.MethodHead}, "/health/", redirectTrailingSlash)
 	router.GET("/albums", handler.getAlbums)
+
+	// @Summary Check album collection metadata
+	// @Description Return collection metadata without a response body. Artist, limit, and offset can each be specified once. Artist must be non-blank valid UTF-8; spaces are preserved when matching.
+	// @Tags albums
+	// @Param artist query string false "Exact, case-sensitive artist name; non-blank valid UTF-8"
+	// @Param limit query int false "Maximum number of albums to return" minimum(1)
+	// @Param offset query int false "Number of albums to skip" minimum(0)
+	// @Success 200 "Collection metadata"
+	// @Header 200 {integer} X-Total-Count "Number of matching albums before pagination, included when filtering or pagination is requested"
+	// @Header 200 {string} Link "Relative next-page URL with rel=next, included when a limited page has more matching albums"
+	// @Failure 400 "Invalid query"
+	// @Router /albums [head]
 	router.HEAD("/albums", omitResponseBody, handler.getAlbums)
 	router.GET("/albums/:id", handler.getAlbumByID)
+
+	// @Summary Check whether an album exists
+	// @Description Return the album lookup status without a response body.
+	// @Tags albums
+	// @Param id path string true "Album ID"
+	// @Success 200 "Album found"
+	// @Failure 404 "Album not found"
+	// @Router /albums/{id} [head]
 	router.HEAD("/albums/:id", omitResponseBody, handler.getAlbumByID)
 	router.POST("/albums", handler.postAlbums)
 	router.Match([]string{http.MethodGet, http.MethodHead, http.MethodPost}, "/albums/", redirectTrailingSlash)
@@ -146,7 +172,6 @@ func unescapePathParams(c *gin.Context) {
 // @Produce json
 // @Success 200 {object} healthResponse
 // @Router /health [get]
-// @Router /health [head]
 func getHealth(c *gin.Context) {
 	if c.Request.Method == http.MethodHead {
 		c.Header("Content-Type", "application/json; charset=utf-8")
