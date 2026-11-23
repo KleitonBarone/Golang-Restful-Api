@@ -2,7 +2,12 @@
 
 ## Next
 
-No capabilities are currently scheduled.
+1. Describe album and readiness HEAD responses as bodyless in the served
+   OpenAPI document while retaining their status codes and response headers.
+2. Use one storage method for album collection GETs, including unfiltered
+   requests, so stores implement one read contract for collection payloads.
+3. Make the album walkthrough rerunnable after an interrupted run by generating
+   an unused demo ID for each invocation.
 
 ## Completed
 
