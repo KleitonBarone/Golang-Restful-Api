@@ -6,10 +6,10 @@ import (
 )
 
 type albumStore interface {
-	list() []album
 	// An empty artist disables filtering; otherwise the match is exact.
 	count(artist string) int
-	// listPage returns a detached filtered page and total from one snapshot. Zero limit is unbounded; offset must be non-negative.
+	// listPage returns detached albums and the matching total from one snapshot.
+	// An empty artist disables filtering. A zero limit is unbounded, and offset must be non-negative.
 	listPage(limit, offset int, artist string) ([]album, int)
 	get(id string) (album, bool)
 	create(album) bool
@@ -27,12 +27,6 @@ var _ albumStore = (*inMemoryAlbumStore)(nil)
 
 func newAlbumStore(albums []album) *inMemoryAlbumStore {
 	return &inMemoryAlbumStore{albums: append([]album(nil), albums...)}
-}
-
-func (s *inMemoryAlbumStore) list() []album {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	return append([]album(nil), s.albums...)
 }
 
 func (s *inMemoryAlbumStore) count(artist string) int {

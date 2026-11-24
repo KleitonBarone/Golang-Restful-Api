@@ -52,7 +52,7 @@ func TestAlbumsArtistFilter(t *testing.T) {
 					t.Fatalf("expected array %v, got %s", scenario.want, response.Body)
 				}
 			}
-			if !slices.Equal(store.list(), albums) {
+			if !slices.Equal(allStoredAlbums(store), albums) {
 				t.Fatal("filter changed stored albums")
 			}
 		})

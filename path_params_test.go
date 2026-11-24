@@ -89,7 +89,7 @@ func TestAlbumMutationsRejectDotOnlyIDs(t *testing.T) {
 					store.create(album{ID: id, Title: "Original", Artist: "Artist", Price: 10})
 					path += "/" + id
 				}
-				before := store.list()
+				before := allStoredAlbums(store)
 				body, err := json.Marshal(album{ID: id, Title: "Changed", Artist: "Artist", Price: 20})
 				if err != nil {
 					t.Fatal(err)
@@ -108,7 +108,7 @@ func TestAlbumMutationsRejectDotOnlyIDs(t *testing.T) {
 				if response.Header().Get("Location") != "" {
 					t.Fatal("invalid ID returned a Location header")
 				}
-				if !slices.Equal(before, store.list()) {
+				if !slices.Equal(before, allStoredAlbums(store)) {
 					t.Fatal("invalid ID changed stored albums")
 				}
 			})

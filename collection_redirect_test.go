@@ -29,7 +29,7 @@ func TestAlbumCollectionRedirectIgnoresForwardedPrefix(t *testing.T) {
 			if got := response.Header().Get("Location"); got != "/albums?limit=1&offset=0" {
 				t.Fatalf("unexpected redirect location %q", got)
 			}
-			if len(store.list()) != 0 {
+			if len(allStoredAlbums(store)) != 0 {
 				t.Fatal("redirect changed the collection")
 			}
 

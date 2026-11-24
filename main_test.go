@@ -369,25 +369,20 @@ type stubAlbumStore struct {
 	albums []album
 }
 
-func (s *stubAlbumStore) list() []album {
-	return append([]album(nil), s.albums...)
-}
-
 func (s *stubAlbumStore) count(artist string) int {
 	return len(s.albums)
 }
 
 func (s *stubAlbumStore) listPage(limit, offset int, artist string) ([]album, int) {
-	albums := s.list()
-	total := len(albums)
+	total := len(s.albums)
 	if offset >= total {
 		return nil, total
 	}
-	albums = albums[offset:]
+	albums := s.albums[offset:]
 	if limit > 0 && limit < len(albums) {
 		albums = albums[:limit]
 	}
-	return albums, total
+	return append([]album(nil), albums...), total
 }
 
 func (s *stubAlbumStore) get(id string) (album, bool) {
@@ -582,7 +577,7 @@ func TestGetAlbumsEmptyCollectionReturnsArray(t *testing.T) {
 		t.Run(scenario.name, func(t *testing.T) {
 			gin.SetMode(gin.TestMode)
 			router := setupRouterWithStore(scenario.store)
-			for _, current := range scenario.store.list() {
+			for _, current := range allStoredAlbums(scenario.store) {
 				response := httptest.NewRecorder()
 				router.ServeHTTP(response, httptest.NewRequest(http.MethodDelete, "/albums/"+current.ID, nil))
 				if response.Code != http.StatusNoContent {
@@ -657,44 +652,48 @@ func TestGetAlbumsPagination(t *testing.T) {
 
 type pageOnlyAlbumStore struct {
 	stubAlbumStore
-	t      *testing.T
 	limit  int
 	offset int
-}
-
-func (s *pageOnlyAlbumStore) list() []album {
-	s.t.Fatal("paginated request must not copy the full collection")
-	return nil
+	artist string
+	calls  int
 }
 
 func (s *pageOnlyAlbumStore) listPage(limit, offset int, artist string) ([]album, int) {
-	s.limit, s.offset = limit, offset
+	s.calls++
+	s.limit, s.offset, s.artist = limit, offset, artist
 	return s.albums, 42
 }
 
 func TestGetAlbumsUsesStoragePageAndTotal(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	for _, query := range []struct {
-		path   string
-		limit  int
-		offset int
+		path      string
+		limit     int
+		offset    int
+		artist    string
+		wantTotal string
 	}{
-		{path: "/albums?limit=1&offset=2", limit: 1, offset: 2},
-		{path: "/albums?offset=0"},
-		{path: "/albums?limit=1", limit: 1},
+		{path: "/albums"},
+		{path: "/albums?limit=1&offset=2", limit: 1, offset: 2, wantTotal: "42"},
+		{path: "/albums?offset=0", wantTotal: "42"},
+		{path: "/albums?limit=1", limit: 1, wantTotal: "42"},
+		{path: "/albums?artist=Sarah+Vaughan", artist: "Sarah Vaughan", wantTotal: "42"},
 	} {
 		t.Run(query.path, func(t *testing.T) {
-			store := &pageOnlyAlbumStore{stubAlbumStore: stubAlbumStore{albums: seedAlbums()[2:]}, t: t}
+			store := &pageOnlyAlbumStore{stubAlbumStore: stubAlbumStore{albums: seedAlbums()[2:]}}
 			response := httptest.NewRecorder()
 			setupRouterWithStore(store).ServeHTTP(response, httptest.NewRequest(http.MethodGet, query.path, nil))
 			if response.Code != http.StatusOK {
 				t.Fatalf("expected status %d, got %d", http.StatusOK, response.Code)
 			}
-			if store.limit != query.limit || store.offset != query.offset {
-				t.Fatalf("expected storage page (%d, %d), got (%d, %d)", query.limit, query.offset, store.limit, store.offset)
+			if store.calls != 1 {
+				t.Fatalf("expected one collection read, got %d", store.calls)
 			}
-			if got := response.Header().Get("X-Total-Count"); got != "42" {
-				t.Fatalf("expected storage total 42, got %q", got)
+			if store.limit != query.limit || store.offset != query.offset || store.artist != query.artist {
+				t.Fatalf("expected storage query (%d, %d, %q), got (%d, %d, %q)", query.limit, query.offset, query.artist, store.limit, store.offset, store.artist)
+			}
+			if got := response.Header().Get("X-Total-Count"); got != query.wantTotal {
+				t.Fatalf("expected storage total %q, got %q", query.wantTotal, got)
 			}
 			var got []album
 			if err := json.Unmarshal(response.Body.Bytes(), &got); err != nil {
@@ -808,7 +807,7 @@ func TestPostAlbums(t *testing.T) {
 	if got, want := response.Header().Get("Location"), "/albums/4"; got != want {
 		t.Fatalf("expected location %q, got %q", want, got)
 	}
-	if got := len(store.list()); got != 4 {
+	if got := len(allStoredAlbums(store)); got != 4 {
 		t.Fatalf("expected 4 albums after creation, got %d", got)
 	}
 }
@@ -950,7 +949,7 @@ func TestAlbumMutationsRejectNonJSONContentType(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			store := newAlbumStore(seedAlbums())
-			before := store.list()
+			before := allStoredAlbums(store)
 			response := httptest.NewRecorder()
 			request := httptest.NewRequest(tt.method, tt.path, bytes.NewBufferString(tt.body))
 			request.Header.Set("Content-Type", "text/plain")
@@ -960,7 +959,7 @@ func TestAlbumMutationsRejectNonJSONContentType(t *testing.T) {
 			if response.Code != http.StatusUnsupportedMediaType {
 				t.Fatalf("expected status %d, got %d", http.StatusUnsupportedMediaType, response.Code)
 			}
-			if after := store.list(); fmt.Sprint(after) != fmt.Sprint(before) {
+			if after := allStoredAlbums(store); fmt.Sprint(after) != fmt.Sprint(before) {
 				t.Fatalf("unsupported media type changed albums from %#v to %#v", before, after)
 			}
 
@@ -977,7 +976,7 @@ func TestAlbumMutationsRejectNonJSONContentType(t *testing.T) {
 
 func TestPostAlbumsRejectsDuplicateID(t *testing.T) {
 	store := newAlbumStore(seedAlbums())
-	before := store.list()
+	before := allStoredAlbums(store)
 	router := setupRouterWithStore(store)
 	response := httptest.NewRecorder()
 	request := httptest.NewRequest(
@@ -992,7 +991,7 @@ func TestPostAlbumsRejectsDuplicateID(t *testing.T) {
 	if response.Code != http.StatusConflict {
 		t.Fatalf("expected status %d, got %d", http.StatusConflict, response.Code)
 	}
-	if after := store.list(); fmt.Sprint(after) != fmt.Sprint(before) {
+	if after := allStoredAlbums(store); fmt.Sprint(after) != fmt.Sprint(before) {
 		t.Fatalf("duplicate create changed albums from %#v to %#v", before, after)
 	}
 
@@ -1051,14 +1050,14 @@ func TestPostAlbumsCreatesDuplicateIDOnlyOnceConcurrently(t *testing.T) {
 	if got := conflicts.Load(); got != requestCount-1 {
 		t.Fatalf("expected %d conflict responses, got %d", requestCount-1, got)
 	}
-	if got := len(store.list()); got != 1 {
+	if got := len(allStoredAlbums(store)); got != 1 {
 		t.Fatalf("expected one stored album, got %d", got)
 	}
 }
 
 func TestPostAlbumsRejectsMalformedJSON(t *testing.T) {
 	store := newAlbumStore(seedAlbums())
-	before := len(store.list())
+	before := len(allStoredAlbums(store))
 	router := setupRouterWithStore(store)
 	response := httptest.NewRecorder()
 	request := httptest.NewRequest(http.MethodPost, "/albums", bytes.NewBufferString(`{"id":`))
@@ -1069,7 +1068,7 @@ func TestPostAlbumsRejectsMalformedJSON(t *testing.T) {
 	if response.Code != http.StatusBadRequest {
 		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, response.Code)
 	}
-	if got := len(store.list()); got != before {
+	if got := len(allStoredAlbums(store)); got != before {
 		t.Fatalf("malformed request changed album count from %d to %d", before, got)
 	}
 
@@ -1084,7 +1083,7 @@ func TestPostAlbumsRejectsMalformedJSON(t *testing.T) {
 
 func TestPostAlbumsRejectsInvalidUTF8(t *testing.T) {
 	store := newAlbumStore(seedAlbums())
-	before := store.list()
+	before := allStoredAlbums(store)
 	body := []byte(`{"id":"4","title":"`)
 	body = append(body, 0xff)
 	body = append(body, []byte(`","artist":"Miles Davis","price":29.99}`)...)
@@ -1104,7 +1103,7 @@ func TestPostAlbumsRejectsInvalidUTF8(t *testing.T) {
 	if got.Message != "invalid request body" {
 		t.Fatalf("expected invalid-body message, got %q", got.Message)
 	}
-	if after := store.list(); fmt.Sprint(after) != fmt.Sprint(before) {
+	if after := allStoredAlbums(store); fmt.Sprint(after) != fmt.Sprint(before) {
 		t.Fatalf("invalid UTF-8 changed albums from %#v to %#v", before, after)
 	}
 }
@@ -1127,7 +1126,7 @@ func TestAlbumMutationsRejectDuplicateFields(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			store := newAlbumStore(seedAlbums())
-			before := store.list()
+			before := allStoredAlbums(store)
 			request := httptest.NewRequest(tt.method, tt.path, bytes.NewBufferString(tt.body))
 			request.Header.Set("Content-Type", "application/json")
 			response := httptest.NewRecorder()
@@ -1144,7 +1143,7 @@ func TestAlbumMutationsRejectDuplicateFields(t *testing.T) {
 			if got.Message != "invalid request body" {
 				t.Fatalf("expected invalid-body message, got %q", got.Message)
 			}
-			if after := store.list(); fmt.Sprint(after) != fmt.Sprint(before) {
+			if after := allStoredAlbums(store); fmt.Sprint(after) != fmt.Sprint(before) {
 				t.Fatalf("duplicate fields changed albums from %#v to %#v", before, after)
 			}
 		})
@@ -1153,7 +1152,7 @@ func TestAlbumMutationsRejectDuplicateFields(t *testing.T) {
 
 func TestPostAlbumsRejectsOversizedBody(t *testing.T) {
 	store := newAlbumStore(seedAlbums())
-	before := store.list()
+	before := allStoredAlbums(store)
 	response := httptest.NewRecorder()
 	request := httptest.NewRequest(
 		http.MethodPost,
@@ -1167,7 +1166,7 @@ func TestPostAlbumsRejectsOversizedBody(t *testing.T) {
 	if response.Code != http.StatusRequestEntityTooLarge {
 		t.Fatalf("expected status %d, got %d", http.StatusRequestEntityTooLarge, response.Code)
 	}
-	if after := store.list(); fmt.Sprint(after) != fmt.Sprint(before) {
+	if after := allStoredAlbums(store); fmt.Sprint(after) != fmt.Sprint(before) {
 		t.Fatalf("oversized request changed albums from %#v to %#v", before, after)
 	}
 
@@ -1182,7 +1181,7 @@ func TestPostAlbumsRejectsOversizedBody(t *testing.T) {
 
 func TestPostAlbumsRejectsOversizedTrailingData(t *testing.T) {
 	store := newAlbumStore(seedAlbums())
-	before := store.list()
+	before := allStoredAlbums(store)
 	body := append(
 		[]byte(`{"id":"4","title":"Kind of Blue","artist":"Miles Davis","price":29.99}`),
 		bytes.Repeat([]byte(" "), int(maxAlbumRequestBodyBytes))...,
@@ -1196,7 +1195,7 @@ func TestPostAlbumsRejectsOversizedTrailingData(t *testing.T) {
 	if response.Code != http.StatusRequestEntityTooLarge {
 		t.Fatalf("expected status %d, got %d", http.StatusRequestEntityTooLarge, response.Code)
 	}
-	if after := store.list(); fmt.Sprint(after) != fmt.Sprint(before) {
+	if after := allStoredAlbums(store); fmt.Sprint(after) != fmt.Sprint(before) {
 		t.Fatalf("oversized request changed albums from %#v to %#v", before, after)
 	}
 
@@ -1227,7 +1226,7 @@ func TestPostAlbumsValidatesRequest(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			store := newAlbumStore(seedAlbums())
-			before := len(store.list())
+			before := len(allStoredAlbums(store))
 			router := setupRouterWithStore(store)
 			response := httptest.NewRecorder()
 			request := httptest.NewRequest(http.MethodPost, "/albums", bytes.NewBufferString(tt.body))
@@ -1238,7 +1237,7 @@ func TestPostAlbumsValidatesRequest(t *testing.T) {
 			if response.Code != http.StatusBadRequest {
 				t.Fatalf("expected status %d, got %d", http.StatusBadRequest, response.Code)
 			}
-			if got := len(store.list()); got != before {
+			if got := len(allStoredAlbums(store)); got != before {
 				t.Fatalf("invalid request changed album count from %d to %d", before, got)
 			}
 
@@ -1335,7 +1334,7 @@ func TestPatchAlbumByIDRejectsInvalidRequests(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			store := newAlbumStore(seedAlbums())
-			before := store.list()
+			before := allStoredAlbums(store)
 			response := httptest.NewRecorder()
 			request := httptest.NewRequest(http.MethodPatch, tt.path, bytes.NewBufferString(tt.body))
 			request.Header.Set("Content-Type", "application/json")
@@ -1352,7 +1351,7 @@ func TestPatchAlbumByIDRejectsInvalidRequests(t *testing.T) {
 			if got.Message != tt.wantMessage {
 				t.Fatalf("expected message %q, got %q", tt.wantMessage, got.Message)
 			}
-			if after := store.list(); fmt.Sprint(after) != fmt.Sprint(before) {
+			if after := allStoredAlbums(store); fmt.Sprint(after) != fmt.Sprint(before) {
 				t.Fatalf("failed patch changed albums from %#v to %#v", before, after)
 			}
 		})
@@ -1377,7 +1376,7 @@ func TestPutAlbumByIDRejectsInvalidRequests(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			store := newAlbumStore(seedAlbums())
-			before := store.list()
+			before := allStoredAlbums(store)
 			router := setupRouterWithStore(store)
 			response := httptest.NewRecorder()
 			request := httptest.NewRequest(http.MethodPut, tt.path, bytes.NewBufferString(tt.body))
@@ -1395,7 +1394,7 @@ func TestPutAlbumByIDRejectsInvalidRequests(t *testing.T) {
 			if got.Message != tt.wantMessage {
 				t.Fatalf("expected message %q, got %q", tt.wantMessage, got.Message)
 			}
-			if after := store.list(); fmt.Sprint(after) != fmt.Sprint(before) {
+			if after := allStoredAlbums(store); fmt.Sprint(after) != fmt.Sprint(before) {
 				t.Fatalf("failed update changed albums from %#v to %#v", before, after)
 			}
 		})
@@ -1404,7 +1403,7 @@ func TestPutAlbumByIDRejectsInvalidRequests(t *testing.T) {
 
 func TestPutAlbumByIDRejectsOversizedBody(t *testing.T) {
 	store := newAlbumStore(seedAlbums())
-	before := store.list()
+	before := allStoredAlbums(store)
 	response := httptest.NewRecorder()
 	request := httptest.NewRequest(
 		http.MethodPut,
@@ -1418,7 +1417,7 @@ func TestPutAlbumByIDRejectsOversizedBody(t *testing.T) {
 	if response.Code != http.StatusRequestEntityTooLarge {
 		t.Fatalf("expected status %d, got %d", http.StatusRequestEntityTooLarge, response.Code)
 	}
-	if after := store.list(); fmt.Sprint(after) != fmt.Sprint(before) {
+	if after := allStoredAlbums(store); fmt.Sprint(after) != fmt.Sprint(before) {
 		t.Fatalf("oversized request changed albums from %#v to %#v", before, after)
 	}
 
@@ -1452,7 +1451,7 @@ func TestDeleteAlbumByID(t *testing.T) {
 
 func TestDeleteAlbumByIDNotFound(t *testing.T) {
 	store := newAlbumStore(seedAlbums())
-	before := len(store.list())
+	before := len(allStoredAlbums(store))
 	router := setupRouterWithStore(store)
 	response := httptest.NewRecorder()
 	request := httptest.NewRequest(http.MethodDelete, "/albums/missing", nil)
@@ -1462,7 +1461,7 @@ func TestDeleteAlbumByIDNotFound(t *testing.T) {
 	if response.Code != http.StatusNotFound {
 		t.Fatalf("expected status %d, got %d", http.StatusNotFound, response.Code)
 	}
-	if got := len(store.list()); got != before {
+	if got := len(allStoredAlbums(store)); got != before {
 		t.Fatalf("missing delete changed album count from %d to %d", before, got)
 	}
 }
@@ -1470,7 +1469,7 @@ func TestDeleteAlbumByIDNotFound(t *testing.T) {
 func TestAlbumRoutesHandleConcurrentRequests(t *testing.T) {
 	store := newAlbumStore(seedAlbums())
 	router := setupRouterWithStore(store)
-	before := len(store.list())
+	before := len(allStoredAlbums(store))
 
 	const requestCount = 50
 	errs := make(chan error, requestCount*2)
@@ -1514,7 +1513,7 @@ func TestAlbumRoutesHandleConcurrentRequests(t *testing.T) {
 		t.Error(err)
 	}
 
-	if got, want := len(store.list()), before+requestCount; got != want {
+	if got, want := len(allStoredAlbums(store)), before+requestCount; got != want {
 		t.Fatalf("expected %d albums after concurrent creation, got %d", want, got)
 	}
 }
@@ -1537,7 +1536,7 @@ func TestRoutersUseIndependentStores(t *testing.T) {
 	if response.Code != http.StatusCreated {
 		t.Fatalf("expected status %d, got %d", http.StatusCreated, response.Code)
 	}
-	if got := len(firstStore.list()); got != 4 {
+	if got := len(allStoredAlbums(firstStore)); got != 4 {
 		t.Fatalf("expected first store to contain 4 albums, got %d", got)
 	}
 

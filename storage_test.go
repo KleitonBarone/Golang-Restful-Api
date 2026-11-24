@@ -6,6 +6,11 @@ import (
 	"testing"
 )
 
+func allStoredAlbums(store albumStore) []album {
+	albums, _ := store.listPage(0, 0, "")
+	return albums
+}
+
 func TestAlbumStoreDeleteClearsUnusedStorage(t *testing.T) {
 	albums := seedAlbums()
 	for _, scenario := range []struct {
@@ -25,7 +30,7 @@ func TestAlbumStoreDeleteClearsUnusedStorage(t *testing.T) {
 			if !store.delete(scenario.id) {
 				t.Fatal("expected album to be deleted")
 			}
-			if got := store.list(); !slices.Equal(got, scenario.want) {
+			if got := allStoredAlbums(store); !slices.Equal(got, scenario.want) {
 				t.Fatalf("expected remaining albums %v, got %v", scenario.want, got)
 			}
 			for _, unused := range backing[len(store.albums):] {

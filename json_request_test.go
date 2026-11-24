@@ -43,7 +43,7 @@ func TestAlbumMutationsValidateUnicodeEscapes(t *testing.T) {
 		} {
 			t.Run(route.method+"/"+scenario.name, func(t *testing.T) {
 				store := newAlbumStore(seedAlbums())
-				before := store.list()
+				before := allStoredAlbums(store)
 				request := httptest.NewRequest(route.method, route.path, bytes.NewBufferString(fmt.Sprintf(route.body, scenario.title)))
 				request.Header.Set("Content-Type", "application/json")
 				response := httptest.NewRecorder()
@@ -57,7 +57,7 @@ func TestAlbumMutationsValidateUnicodeEscapes(t *testing.T) {
 					if err := json.Unmarshal(response.Body.Bytes(), &got); err != nil || got.Message != "invalid request body" {
 						t.Fatalf("expected invalid-body response, got %s, error %v", response.Body, err)
 					}
-					if !slices.Equal(before, store.list()) {
+					if !slices.Equal(before, allStoredAlbums(store)) {
 						t.Fatal("invalid Unicode escape changed stored albums")
 					}
 					return

@@ -68,12 +68,8 @@ func (h albumHandler) getAlbums(c *gin.Context) {
 		return
 	}
 
-	var albums []album
-	if !hasLimit && !hasOffset && !hasArtist {
-		albums = h.store.list()
-	} else {
-		var total int
-		albums, total = h.store.listPage(limit, offset, artist)
+	albums, total := h.store.listPage(limit, offset, artist)
+	if hasLimit || hasOffset || hasArtist {
 		setAlbumPageHeaders(c, query, limit, offset, total)
 	}
 	if albums == nil {

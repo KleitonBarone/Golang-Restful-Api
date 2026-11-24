@@ -14,11 +14,6 @@ type metadataOnlyAlbumStore struct {
 	artist     string
 }
 
-func (s *metadataOnlyAlbumStore) list() []album {
-	s.t.Fatal("HEAD must not read the collection payload")
-	return nil
-}
-
 func (s *metadataOnlyAlbumStore) listPage(limit, offset int, artist string) ([]album, int) {
 	s.t.Fatal("HEAD must not read a page payload")
 	return nil, 0
@@ -110,7 +105,7 @@ func TestHeadAlbumsMatchesGetMetadata(t *testing.T) {
 			if got := head.Header().Get("X-Total-Count"); got != scenario.total || got != get.Header().Get("X-Total-Count") {
 				t.Fatalf("expected total %q, got HEAD %q and GET %q", scenario.total, got, get.Header().Get("X-Total-Count"))
 			}
-			if !slices.Equal(store.list(), initial) {
+			if !slices.Equal(allStoredAlbums(store), initial) {
 				t.Fatal("read requests changed stored albums")
 			}
 		})

@@ -2,12 +2,14 @@
 
 ## Next
 
-1. Use one storage method for album collection GETs, including unfiltered
-   requests, so stores implement one read contract for collection payloads.
-2. Make the album walkthrough rerunnable after an interrupted run by generating
+1. Make the album walkthrough rerunnable after an interrupted run by generating
    an unused demo ID for each invocation.
 
 ## Completed
+
+- All album collection GET requests use the same storage method for payloads.
+  Unfiltered full lists still omit pagination headers, and HEAD uses a separate
+  count when filtering or pagination requires collection metadata.
 
 - The served OpenAPI document describes album and readiness HEAD responses as
   bodyless, including album lookup and query errors. Collection HEAD operations

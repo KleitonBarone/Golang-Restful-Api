@@ -61,7 +61,7 @@ func TestDocumentedAlbumWalkthrough(t *testing.T) {
 			t.Errorf("walkthrough result %d: got %s, want %s", i, results[i], want)
 		}
 	}
-	if got := store.list(); !reflect.DeepEqual(got, seedAlbums()) {
+	if got := allStoredAlbums(store); !reflect.DeepEqual(got, seedAlbums()) {
 		t.Errorf("walkthrough must leave sample albums unchanged: %+v", got)
 	}
 }
