@@ -25,7 +25,11 @@ func TestDocumentedAlbumWalkthrough(t *testing.T) {
 	if len(results) != 17 {
 		t.Fatalf("expected 17 walkthrough results, got %d: %s", len(results), results)
 	}
-	created := album{ID: "walkthrough-demo", Title: "Kind of Blue", Artist: "Miles Davis", Price: 29.99}
+	var posted album
+	if err := json.Unmarshal(results[1], &posted); err != nil || posted.ID == "" {
+		t.Fatalf("walkthrough must create an album with a non-empty ID: got %s, decode error: %v", results[1], err)
+	}
+	created := album{ID: posted.ID, Title: "Kind of Blue", Artist: "Miles Davis", Price: 29.99}
 	replaced := created
 	replaced.Title, replaced.Price = "Kind of Blue (remastered)", 34.99
 	patched := replaced
@@ -63,6 +67,33 @@ func TestDocumentedAlbumWalkthrough(t *testing.T) {
 	}
 	if got := allStoredAlbums(store); !reflect.DeepEqual(got, seedAlbums()) {
 		t.Errorf("walkthrough must leave sample albums unchanged: %+v", got)
+	}
+}
+
+func TestDocumentedAlbumWalkthroughAfterInterruption(t *testing.T) {
+	leftover := album{ID: "walkthrough-demo", Title: "Interrupted demo", Artist: "Miles Davis", Price: 29.99}
+	initial := append(seedAlbums(), leftover)
+	store := newAlbumStore(initial)
+	server := httptest.NewServer(setupRouterWithStore(store))
+	defer server.Close()
+
+	previousID := leftover.ID
+	for run := 1; run <= 2; run++ {
+		results := runDocumentedWalkthrough(t, "docs/album-workflow.md", server.URL)
+		if len(results) < 2 {
+			t.Fatalf("run %d: missing album creation result: %s", run, results)
+		}
+		var created album
+		if err := json.Unmarshal(results[1], &created); err != nil {
+			t.Fatalf("run %d: decode created album: %v", run, err)
+		}
+		if created.ID == "" || created.ID == leftover.ID || created.ID == previousID {
+			t.Errorf("run %d: walkthrough reused an album ID: %q", run, created.ID)
+		}
+		previousID = created.ID
+		if got := allStoredAlbums(store); !reflect.DeepEqual(got, initial) {
+			t.Errorf("run %d: walkthrough changed existing albums: %+v", run, got)
+		}
 	}
 }
 

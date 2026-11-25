@@ -12,16 +12,16 @@ The server listens on `localhost:8080` by default. If you set `LISTEN_ADDRESS`,
 change `$base` to the server's HTTP address.
 
 Albums are stored in memory. Every start loads sample albums with IDs `1`, `2`,
-and `3`. Changes are lost when the process exits. This walkthrough uses the
-separate ID `walkthrough-demo` and deletes it at the end. If that ID already
-exists, choose another unused ID before starting; creation returns 409 for an
-existing ID.
+and `3`. Changes are lost when the process exits. Each run generates a new demo
+ID and deletes its own album at the end. If a run is interrupted before
+deletion, rerun the whole block to get a fresh ID. Any album left by the earlier
+run stays in the collection until it is deleted or the server stops.
 
 Run this block in order:
 
 ```powershell
 $base = 'http://localhost:8080'
-$id = 'walkthrough-demo'
+$id = "walkthrough-$([guid]::NewGuid().ToString('N'))"
 $albumUrl = "$base/albums/$id"
 
 # Check readiness. The response has status "ok".
@@ -67,7 +67,7 @@ while ($page.RelationLink.ContainsKey('next')) {
     HasNext = $page.RelationLink.ContainsKey('next')
 }
 
-# Find the album by its exact, case-sensitive artist name before pagination.
+# Filter albums by exact, case-sensitive artist name before pagination.
 # Encode the query value so spaces, literal plus signs, and other symbols survive.
 $artist = [uri]::EscapeDataString($album.artist)
 $filteredUrl = "$base/albums?artist=$artist&limit=1"
@@ -96,11 +96,12 @@ followed by the updated demo album, once each. The final page has no next link,
 so `HasNext` is false. Links and totals describe each request's snapshot;
 concurrent mutations can change the collection between requests.
 
-The filtered page contains the updated demo album and has
-`X-Total-Count: 1`. The HEAD check returns status 200, the same total of 1, and
-a response body length of 0. Artist matching preserves spaces and is
-case-sensitive. The total counts matching albums before pagination, so it can
-exceed the page size if you add more albums by the same artist.
+On a fresh server, the filtered page contains the updated demo album and has
+`X-Total-Count: 1`. The HEAD check returns status 200, the same total, and a
+response body length of 0. Artist matching preserves spaces and is
+case-sensitive. A demo album left by an interrupted run can appear first on the
+filtered page and increase the matching total, which counts matches before
+pagination.
 
 The final response is 404 with `{"message":"album not found"}`. The sample
 albums remain available. Stop the server with Ctrl+C when finished.

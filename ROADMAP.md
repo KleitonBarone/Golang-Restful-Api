@@ -2,10 +2,13 @@
 
 ## Next
 
-1. Make the album walkthrough rerunnable after an interrupted run by generating
-   an unused demo ID for each invocation.
+- No capabilities are currently scheduled.
 
 ## Completed
+
+- The PowerShell album walkthrough generates a fresh demo ID on each run.
+  Canonical verification reruns it with an album left by an interrupted run
+  and checks that existing albums are preserved.
 
 - All album collection GET requests use the same storage method for payloads.
   Unfiltered full lists still omit pagination headers, and HEAD uses a separate
