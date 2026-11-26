@@ -2,13 +2,13 @@
 
 ## Next
 
-- Serve the Scalar page and the OpenAPI document through one registration
-  helper so content types, ETags, HEAD handling, and redirects stay consistent.
-
 - Use one album ID lookup in the in-memory store so reads, duplicate checks,
   updates, and deletion follow the same matching rules under their locks.
 
 ## Completed
+
+- The Scalar page and the OpenAPI document share route registration for GET,
+  HEAD, content-derived ETags, and trailing-slash redirects.
 
 - The PowerShell album walkthrough generates a fresh demo ID on each run.
   Canonical verification reruns it with an album left by an interrupted run

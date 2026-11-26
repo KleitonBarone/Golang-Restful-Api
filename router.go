@@ -91,30 +91,22 @@ func setupRouterWithStore(store albumStore) *gin.Engine {
 		"/albums/:id/", redirectTrailingSlash)
 
 	// Scalar loads only the generated document; no Swagger UI assets are needed.
-	openAPIETag := fmt.Sprintf(`"%x"`, sha256.Sum256(openAPIJSON))
-	serveOpenAPI := func(c *gin.Context) {
-		c.Header("Content-Type", "application/json; charset=utf-8")
-		c.Header("ETag", openAPIETag)
-		// The embedded document has no modification time. Its content hash remains
-		// stable across restarts, while ServeContent handles HTTP preconditions.
-		http.ServeContent(c.Writer, c.Request, "doc.json", time.Time{}, bytes.NewReader(openAPIJSON))
-	}
-	router.GET("/swagger/doc.json", serveOpenAPI)
-	router.HEAD("/swagger/doc.json", serveOpenAPI)
-	router.Match([]string{http.MethodGet, http.MethodHead}, "/swagger/doc.json/", redirectTrailingSlash)
-
-	// Scalar docs UI
-	docsETag := fmt.Sprintf(`"%x"`, sha256.Sum256(scalarHTML))
-	serveDocs := func(c *gin.Context) {
-		c.Header("Content-Type", "text/html; charset=utf-8")
-		c.Header("ETag", docsETag)
-		http.ServeContent(c.Writer, c.Request, "scalar.html", time.Time{}, bytes.NewReader(scalarHTML))
-	}
-	router.GET("/docs", serveDocs)
-	router.HEAD("/docs", serveDocs)
-	router.Match([]string{http.MethodGet, http.MethodHead}, "/docs/", redirectTrailingSlash)
+	registerEmbeddedDocument(router, "/swagger/doc.json", "doc.json", "application/json; charset=utf-8", openAPIJSON)
+	registerEmbeddedDocument(router, "/docs", "scalar.html", "text/html; charset=utf-8", scalarHTML)
 
 	return router
+}
+
+func registerEmbeddedDocument(router *gin.Engine, route, name, contentType string, content []byte) {
+	// The content hash stays stable across restarts. ServeContent handles HTTP preconditions.
+	etag := fmt.Sprintf(`"%x"`, sha256.Sum256(content))
+	methods := []string{http.MethodGet, http.MethodHead}
+	router.Match(methods, route, func(c *gin.Context) {
+		c.Header("Content-Type", contentType)
+		c.Header("ETag", etag)
+		http.ServeContent(c.Writer, c.Request, name, time.Time{}, bytes.NewReader(content))
+	})
+	router.Match(methods, route+"/", redirectTrailingSlash)
 }
 
 // omitResponseBody lets HEAD reuse GET handlers, including their error responses.
