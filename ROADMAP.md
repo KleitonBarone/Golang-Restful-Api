@@ -2,10 +2,12 @@
 
 ## Next
 
-- Use one album ID lookup in the in-memory store so reads, duplicate checks,
-  updates, and deletion follow the same matching rules under their locks.
+- No capabilities are currently scheduled.
 
 ## Completed
+
+- Reads, duplicate checks, updates, and deletion in the in-memory album store
+  share one exact ID lookup under the caller's existing lock.
 
 - The Scalar page and the OpenAPI document share route registration for GET,
   HEAD, content-derived ETags, and trailing-slash redirects.

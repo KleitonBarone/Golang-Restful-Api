@@ -75,10 +75,8 @@ func (s *inMemoryAlbumStore) listPage(limit, offset int, artist string) ([]album
 func (s *inMemoryAlbumStore) get(id string) (album, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	for _, candidate := range s.albums {
-		if candidate.ID == id {
-			return candidate, true
-		}
+	if index := s.indexOfID(id); index >= 0 {
+		return s.albums[index], true
 	}
 	return album{}, false
 }
@@ -86,10 +84,8 @@ func (s *inMemoryAlbumStore) get(id string) (album, bool) {
 func (s *inMemoryAlbumStore) create(newAlbum album) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	for _, candidate := range s.albums {
-		if candidate.ID == newAlbum.ID {
-			return false
-		}
+	if s.indexOfID(newAlbum.ID) >= 0 {
+		return false
 	}
 	s.albums = append(s.albums, newAlbum)
 	return true
@@ -98,11 +94,9 @@ func (s *inMemoryAlbumStore) create(newAlbum album) bool {
 func (s *inMemoryAlbumStore) update(id string, updatedAlbum album) (album, bool) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	for index, candidate := range s.albums {
-		if candidate.ID == id {
-			s.albums[index] = updatedAlbum
-			return updatedAlbum, true
-		}
+	if index := s.indexOfID(id); index >= 0 {
+		s.albums[index] = updatedAlbum
+		return updatedAlbum, true
 	}
 	return album{}, false
 }
@@ -110,12 +104,10 @@ func (s *inMemoryAlbumStore) update(id string, updatedAlbum album) (album, bool)
 func (s *inMemoryAlbumStore) patch(id string, changes albumPatch) (album, bool) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	for index, candidate := range s.albums {
-		if candidate.ID == id {
-			updatedAlbum := changes.apply(candidate)
-			s.albums[index] = updatedAlbum
-			return updatedAlbum, true
-		}
+	if index := s.indexOfID(id); index >= 0 {
+		updatedAlbum := changes.apply(s.albums[index])
+		s.albums[index] = updatedAlbum
+		return updatedAlbum, true
 	}
 	return album{}, false
 }
@@ -123,13 +115,18 @@ func (s *inMemoryAlbumStore) patch(id string, changes albumPatch) (album, bool) 
 func (s *inMemoryAlbumStore) delete(id string) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	for index, candidate := range s.albums {
-		if candidate.ID == id {
-			s.albums = slices.Delete(s.albums, index, index+1)
-			return true
-		}
+	if index := s.indexOfID(id); index >= 0 {
+		s.albums = slices.Delete(s.albums, index, index+1)
+		return true
 	}
 	return false
+}
+
+// indexOfID requires the caller to hold a read or write lock on s.mu.
+func (s *inMemoryAlbumStore) indexOfID(id string) int {
+	return slices.IndexFunc(s.albums, func(candidate album) bool {
+		return candidate.ID == id
+	})
 }
 
 func seedAlbums() []album {
