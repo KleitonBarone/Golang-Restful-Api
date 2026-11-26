@@ -2,7 +2,11 @@
 
 ## Next
 
-- No capabilities are currently scheduled.
+- Serve the Scalar page and the OpenAPI document through one registration
+  helper so content types, ETags, HEAD handling, and redirects stay consistent.
+
+- Use one album ID lookup in the in-memory store so reads, duplicate checks,
+  updates, and deletion follow the same matching rules under their locks.
 
 ## Completed
 
