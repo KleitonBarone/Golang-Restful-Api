@@ -41,11 +41,11 @@ func (h albumHandler) getAlbums(c *gin.Context) {
 		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: "invalid query string"})
 		return
 	}
-	limit, hasLimit, ok := positiveQueryInt(c, query, "limit")
+	limit, hasLimit, ok := queryIntAtLeast(c, query, "limit", 1, "limit must be a positive integer")
 	if !ok {
 		return
 	}
-	offset, hasOffset, ok := nonNegativeQueryInt(c, query, "offset")
+	offset, hasOffset, ok := queryIntAtLeast(c, query, "offset", 0, "offset must be a non-negative integer")
 	if !ok {
 		return
 	}
@@ -88,27 +88,14 @@ func setAlbumPageHeaders(c *gin.Context, query url.Values, limit, offset, total 
 	}
 }
 
-func positiveQueryInt(c *gin.Context, query url.Values, name string) (int, bool, bool) {
+func queryIntAtLeast(c *gin.Context, query url.Values, name string, minimum int, invalidMessage string) (int, bool, bool) {
 	raw, exists, ok := singleQueryValue(c, query, name)
 	if !ok || !exists {
 		return 0, exists, ok
 	}
 	value, err := strconv.Atoi(raw)
-	if err != nil || value <= 0 {
-		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: name + " must be a positive integer"})
-		return 0, true, false
-	}
-	return value, true, true
-}
-
-func nonNegativeQueryInt(c *gin.Context, query url.Values, name string) (int, bool, bool) {
-	raw, exists, ok := singleQueryValue(c, query, name)
-	if !ok || !exists {
-		return 0, exists, ok
-	}
-	value, err := strconv.Atoi(raw)
-	if err != nil || value < 0 {
-		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: name + " must be a non-negative integer"})
+	if err != nil || value < minimum {
+		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: invalidMessage})
 		return 0, true, false
 	}
 	return value, true, true

@@ -2,14 +2,15 @@
 
 ## Next
 
-1. Parse album limit and offset through one integer validator. Preserve their
-   distinct bounds and error messages, and keep totals for an explicit zero
-   offset on GET and HEAD.
-2. Remove the repeated end-of-body decode from album mutation validation.
+1. Remove the repeated end-of-body decode from album mutation validation.
    Keep whole-body syntax checks and rejection of extra JSON values after a
    valid object.
 
 ## Completed
+
+- Album limit and offset share one integer validator with their existing bounds
+  and error messages. An explicit zero offset still returns totals on GET and
+  HEAD.
 
 - Reads, duplicate checks, updates, and deletion in the in-memory album store
   share one exact ID lookup under the caller's existing lock.

@@ -35,6 +35,7 @@ func TestHeadAlbumsDoesNotReadAlbumPayloads(t *testing.T) {
 	}{
 		{path: "/albums", status: http.StatusOK},
 		{path: "/albums?limit=1", status: http.StatusOK, total: "42", countCalls: 1},
+		{path: "/albums?offset=0", status: http.StatusOK, total: "42", countCalls: 1},
 		{path: "/albums?offset=99", status: http.StatusOK, total: "42", countCalls: 1},
 		{path: "/albums?limit=2&offset=1", status: http.StatusOK, total: "42", countCalls: 1},
 		{path: "/albums?artist=John+Coltrane", status: http.StatusOK, total: "42", countCalls: 1, artist: "John Coltrane"},
