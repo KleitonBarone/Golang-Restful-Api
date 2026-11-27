@@ -2,7 +2,12 @@
 
 ## Next
 
-- No capabilities are currently scheduled.
+1. Parse album limit and offset through one integer validator. Preserve their
+   distinct bounds and error messages, and keep totals for an explicit zero
+   offset on GET and HEAD.
+2. Remove the repeated end-of-body decode from album mutation validation.
+   Keep whole-body syntax checks and rejection of extra JSON values after a
+   valid object.
 
 ## Completed
 
