@@ -283,16 +283,13 @@ func decodeJSONRequest[T any](c *gin.Context) (T, bool) {
 		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: "invalid request body"})
 		return empty, false
 	}
-	if err := decoder.Decode(&struct{}{}); !errors.Is(err, io.EOF) {
-		c.IndentedJSON(http.StatusBadRequest, errorResponse{Message: "invalid request body"})
-		return empty, false
-	}
 
 	return request, true
 }
 
-// validJSONText rejects text that encoding/json would silently replace. Syntax
-// validation first makes escape scanning safe, including escaped backslashes.
+// validJSONText checks the entire body for a single JSON value and rejects
+// text that encoding/json would silently replace. Valid syntax makes escape
+// scanning safe, including escaped backslashes.
 func validJSONText(body []byte) bool {
 	if !utf8.Valid(body) || !json.Valid(body) {
 		return false

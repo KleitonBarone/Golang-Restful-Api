@@ -2,11 +2,13 @@
 
 ## Next
 
-1. Remove the repeated end-of-body decode from album mutation validation.
-   Keep whole-body syntax checks and rejection of extra JSON values after a
-   valid object.
+No capabilities are scheduled.
 
 ## Completed
+
+- Album mutation validation checks the entire body for one JSON value before
+  decoding the album fields. It rejects malformed trailing data and extra JSON
+  values without a second end-of-body decode.
 
 - Album limit and offset share one integer validator with their existing bounds
   and error messages. An explicit zero offset still returns totals on GET and
